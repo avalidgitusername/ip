@@ -16,7 +16,23 @@ public class List {
             System.out.println("List is full");
             return false;
         }
+    }
 
+    public void setListItemDone(int index) {
+        if (index < listItemCounter) {
+            this.listItems[index].setDone();
+            System.out.println("Nice...You've marked the item done.");
+            System.out.println(this.listItems[index]);
+        }
+    }
+
+    public void setListItemNotDone(int index) {
+        if (index < listItemCounter) {
+            this.listItems[index].setNotDone();
+            
+            System.out.println("Alright. Item marked as not done.");
+            System.out.println(this.listItems[index]);
+        }
     }
 
     @Override

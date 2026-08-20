@@ -44,13 +44,17 @@ public class Record {
             while (b_cont) {
                 System.out.println(text_ask);
                 String user_input = scanner.nextLine();
+
+                boolean listItemOptionParsed = false;
                 
                 switch (user_input) {
                     case "" -> {
                         // Do nothing. Assume user enter wrong.
+                        listItemOptionParsed = true;
                     }
                     case "bye" -> {
                         b_cont = false;
+                        listItemOptionParsed = true;
                     }
                     case "list" -> {
                         if (list != null) {
@@ -58,15 +62,40 @@ public class Record {
                         } else {
                             System.out.println("No items in list!");
                         }
+                        listItemOptionParsed = true;
                     }
-                    default -> {
-                        // Create a new List object for this input
-                        if (Record.list == null) {
-                            Record.list = new List(100);
-                        }
-                        if (list.addItem(user_input)) {
-                            echo_noted(user_input);
-                        }
+                }
+
+                // Handle marking of items in List.
+                if (user_input.toLowerCase().startsWith("mark ")) {
+                    try {
+                        int index = Integer.parseInt(user_input.substring(5)) - 1;
+                        list.setListItemDone(index);
+                        
+                        listItemOptionParsed = true;
+                    } catch (NumberFormatException e) {
+                        // Ignore as nothing.
+                    }
+                }
+
+                if (user_input.toLowerCase().startsWith("unmark ")) {
+                    try {
+                        int index = Integer.parseInt(user_input.substring(7)) - 1;
+                        list.setListItemNotDone(index);
+
+                        listItemOptionParsed = true;
+                    } catch (NumberFormatException e) {
+                        // Ignore as nothing.
+                    }
+                }
+
+                // Create a new List object for this input
+                if (listItemOptionParsed == false) {
+                    if (Record.list == null) {
+                        Record.list = new List(100);
+                    }
+                    if (list.addItem(user_input)) {
+                        echo_noted(user_input);
                     }
                 }
             }
