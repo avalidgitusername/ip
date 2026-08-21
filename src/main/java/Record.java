@@ -97,10 +97,27 @@ public class Record {
                         }
                     }
 
+                    if (user_input.toLowerCase().startsWith("delete ")) {
+                        try {
+                            int index = Integer.parseInt(user_input.substring(7)) - 1;
+
+                            // Handle error
+                            if (list != null) {
+                                String s1 = list.deleteItem(index);
+                                System.out.println(String.format("Success! Deleted: %s",s1));
+                            } else {
+                                System.err.println("Error in Delete: No such item.");
+                            }
+
+                            listItemOptionParsed = true;
+                        } catch (NumberFormatException e) {
+                            // Ignore as nothing.
+                        }
+                    }
                     // Create a new List object for this input
                     if (listItemOptionParsed == false) {
                         if (Record.list == null) {
-                            Record.list = new List(100);
+                            Record.list = new List();
                         }
                         if (user_input.toLowerCase().startsWith("todo ")) {
                             String task = user_input.substring(5).strip();
