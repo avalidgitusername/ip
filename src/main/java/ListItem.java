@@ -1,6 +1,6 @@
 public class ListItem {
-    private final String task;
-    private boolean isDone = false;
+    protected final String task;
+    protected boolean isDone = false;
 
     public ListItem(String task) {
         this.task = task;
@@ -22,7 +22,6 @@ public class ListItem {
         sb.append("] ");
         sb.append(this.task);
         return sb.toString();
-        // return "[" + this + "] " + this.task;
     }
 
 }

@@ -7,14 +7,48 @@ public class List {
         this.listItems = new ListItem[maxSize];
     }
 
-    public boolean addItem(String task) {
+    public ListItem getItem(int index) {
+        return this.listItems[index];
+    }
+    
+    public int addItem(String task) {
         if (this.listItemCounter < listItems.length) {
             this.listItems[this.listItemCounter] = new ListItem(task);
             this.listItemCounter++;
-            return true;
+            return this.listItemCounter-1;
         } else {
             System.out.println("List is full");
-            return false;
+            return -1;
+        }
+    }
+        public int addEventItem(String task, String fromDate, String toDate) {
+        if (this.listItemCounter < listItems.length) {
+            this.listItems[this.listItemCounter] = new EventItem(task, fromDate, toDate);
+            this.listItemCounter++;
+            return this.listItemCounter-1;
+        } else {
+            System.out.println("List is full");
+            return -1;
+        }
+    }
+        public int addDeadlineItem(String task, String byDate) {
+        if (this.listItemCounter < listItems.length) {
+            this.listItems[this.listItemCounter] = new DeadlineItem(task, byDate);
+            this.listItemCounter++;
+            return this.listItemCounter-1;
+        } else {
+            System.out.println("List is full");
+            return -1;
+        }
+    }
+        public int addToDoItem(String task) {
+        if (this.listItemCounter < listItems.length) {
+            this.listItems[this.listItemCounter] = new ToDoItem(task);
+            this.listItemCounter++;
+            return this.listItemCounter-1;
+        } else {
+            System.out.println("List is full");
+            return -1;
         }
     }
 

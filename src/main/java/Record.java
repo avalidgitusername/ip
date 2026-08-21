@@ -94,9 +94,46 @@ public class Record {
                     if (Record.list == null) {
                         Record.list = new List(100);
                     }
-                    if (list.addItem(user_input)) {
-                        echo_noted(user_input);
-                    }
+                    if (user_input.toLowerCase().startsWith("todo ")) {
+                        int listIndex = list.addToDoItem(user_input.substring(5));
+                        echo_noted(list.getItem(listIndex).toString());
+                    } else if (user_input.toLowerCase().startsWith("deadline ")) {
+                        int startSearchIndex = user_input.toLowerCase().indexOf("/by ");
+                        // Error handling
+                        // >1 "by" date
+                        if (startSearchIndex != user_input.toLowerCase().lastIndexOf("/by")) {
+                            System.err.println("Error in Deadline: More than 1 'by' date specified");
+                        }
+                        String byDate = user_input.substring(startSearchIndex + 3).strip();
+
+                        int listIndex = list.addDeadlineItem(user_input.substring(8, startSearchIndex).strip(), byDate);
+                        echo_noted(list.getItem(listIndex).toString());
+                    } else if (user_input.toLowerCase().startsWith("event ")) {
+                        int startSearchFromDateIndex = user_input.toLowerCase().indexOf("/from ");
+                        // Error handling
+                        // >1 "from" date
+                        if (startSearchFromDateIndex != user_input.toLowerCase().lastIndexOf("/from")) {
+                            System.err.println("Error in Event: More than 1 'from' date specified");
+                        }
+                        int startSearchToDateIndex = user_input.toLowerCase().indexOf("/to ");
+                        // >1 "to" date
+                        if (startSearchToDateIndex != user_input.toLowerCase().lastIndexOf("/to")) {
+                            System.err.println("Error in Event: More than 1 'to' date specified");
+                        }
+
+                        if (startSearchToDateIndex < startSearchFromDateIndex) {
+                            System.err.println("Error in Event: 'To' date specified before 'From' date.");
+                        }
+                        String fromDate = user_input.substring(startSearchFromDateIndex + 5, startSearchToDateIndex).strip();
+                        String toDate = user_input.substring(startSearchToDateIndex + 3).strip();
+                        int listIndex = list.addEventItem(user_input.substring(5, startSearchFromDateIndex).strip(), fromDate, toDate);
+                        echo_noted(list.getItem(listIndex).toString());
+
+                    } 
+                    // else {
+                    //     list.addItem(user_input);
+                    //     echo_noted(user_input);
+                    // }
                 }
             }
         } 
