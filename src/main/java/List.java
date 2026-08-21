@@ -8,9 +8,10 @@ public class List {
     }
 
     public ListItem getItem(int index) {
-        return this.listItems[index];
+        return index < this.listItemCounter ? this.listItems[index] : null;
+        // return this.listItems[index];
     }
-    
+
     public int addItem(String task) {
         if (this.listItemCounter < listItems.length) {
             this.listItems[this.listItemCounter] = new ListItem(task);
@@ -53,7 +54,9 @@ public class List {
     }
 
     public void setListItemDone(int index) {
-        if (index < listItemCounter) {
+        if (index < 0 || index >= this.listItemCounter) {
+            throw new RecordException("Error in mark: No such item on list.");
+        } else {
             this.listItems[index].setDone();
             System.out.println("Nice...You've marked the item done.");
             System.out.println(this.listItems[index]);
@@ -61,7 +64,9 @@ public class List {
     }
 
     public void setListItemNotDone(int index) {
-        if (index < listItemCounter) {
+        if (index < 0 || index >= this.listItemCounter) {
+            throw new RecordException("Error in unmark: No such item on list.");
+        } else {
             this.listItems[index].setNotDone();
             
             System.out.println("Alright. Item marked as not done.");
