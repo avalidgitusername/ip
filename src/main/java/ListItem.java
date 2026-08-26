@@ -14,6 +14,11 @@ public class ListItem {
         this.isDone = false;
     }
 
+    // Returns a string representation for saving into a file
+    public String saveString() {
+        return "Stub String";
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

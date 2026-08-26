@@ -23,4 +23,8 @@ public class EventItem extends ListItem {
         return sb.toString();
     }
 
+    @Override
+    public String saveString() {
+        return String.format("E, %s, '%s', '%s', '%s'", this.isDone ? "1" : "0", this.task, this.fromDate, this.toDate);
+    }
 }
