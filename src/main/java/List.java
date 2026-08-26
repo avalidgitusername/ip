@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -134,6 +136,75 @@ public class List {
             writer.close();
         } catch (IOException e) {
             System.out.println("Unable to do something with bufferedwriter");
+            // e.printStackTrace();
+        }
+    }
+
+    public void loadFromFile(String strPath) {
+        Path path = Paths.get(strPath);
+        if (Files.notExists(path)) {
+           // Do nothing.
+           throw new RecordException("No save file to load from.");
+        }
+    
+        try (BufferedReader reader = new BufferedReader(new FileReader(path.toString()))) {
+            String tempStr;
+            while ((tempStr = reader.readLine()) != null) {
+                switch (tempStr.charAt(0)) {
+                    // For all cases, we add the task from the 1st instance of "'" found
+                    case 'T' -> {
+                        int taskIndexStart = tempStr.indexOf(", '");
+                        int taskIndexEnd = tempStr.lastIndexOf("'");
+                        
+                        String task = tempStr.substring(taskIndexStart + 3, taskIndexEnd);
+                        addToDoItem(task);
+                        if (tempStr.charAt(3) == '1') {
+                            this.listItems.getLast().setDone();
+                        }
+                        break;
+                    }
+                    case 'D' -> {
+                        int taskIndexStart = tempStr.indexOf(", '");
+                        int taskIndexEnd = tempStr.indexOf("', ", taskIndexStart + 3);
+
+                        int taskByDateStart = tempStr.indexOf(", '", taskIndexEnd + 1);
+                        int taskByDateEnd = tempStr.lastIndexOf("'");
+
+                        String task = tempStr.substring(taskIndexStart + 3, taskIndexEnd);
+                        String byDate = tempStr.substring(taskByDateStart + 3, taskByDateEnd);
+                        addDeadlineItem(task, byDate);
+                        if (tempStr.charAt(3) == '1') {
+                            this.listItems.getLast().setDone();
+                        }
+                        break;
+                    }
+                    case 'E' -> {
+                        int taskIndexStart = tempStr.indexOf(", '");
+                        int taskIndexEnd = tempStr.indexOf("', ", taskIndexStart + 3);
+
+                        int taskFromDateStart = tempStr.indexOf(", '", taskIndexEnd + 1);
+                        int taskFromDateEnd = tempStr.indexOf("', ", taskFromDateStart + 3);
+
+                        int taskToDateStart = tempStr.indexOf(", '", taskFromDateEnd + 1);
+                        int taskToDateEnd = tempStr.lastIndexOf("'");
+
+                        String task = tempStr.substring(taskIndexStart + 3, taskIndexEnd);
+                        String fromDate = tempStr.substring(taskFromDateStart + 3, taskFromDateEnd - 1);
+                        String toDate = tempStr.substring(taskToDateStart + 3, taskToDateEnd);
+                        addEventItem(task, fromDate, toDate);
+                        if (tempStr.charAt(3) == '1') {
+                            this.listItems.getLast().setDone();
+                        }
+                        break;
+                    }
+                    default -> {
+                        break;
+                    }
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("Unable to do something with bufferedreader");
             // e.printStackTrace();
         }
     }
