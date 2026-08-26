@@ -15,4 +15,8 @@ public class ToDoItem extends ListItem {
         return sb.toString();
     }
 
+    @Override
+    public String saveString() {
+        return String.format("T, %s, '%s'", this.isDone ? "1" : "0", this.task);
+    }
 }

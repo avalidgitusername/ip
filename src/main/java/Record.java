@@ -199,11 +199,15 @@ public class Record {
         }
     }
 
+    public static void saveList(String strPath) {
+        Record.list.saveToFile(strPath);
+    }
 
     public static void main(String[] args) {
         greet();
 
         ask_input();
+        saveList("data/listdata.txt");
         goodbye();
     }
 }

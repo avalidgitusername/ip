@@ -22,5 +22,9 @@ public class DeadlineItem extends ListItem {
         sb.append(s1);
         return sb.toString();
     }
-
+    
+    @Override
+    public String saveString() {
+        return String.format("D, %s, '%s', '%s'", this.isDone ? "1" : "0", this.task, this.byDate);
+    }
 }

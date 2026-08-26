@@ -1,3 +1,9 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class List {
@@ -104,6 +110,31 @@ public class List {
             
             System.out.println("Alright. Item marked as not done.");
             System.out.println(this.listItems.get(index));
+        }
+    }
+
+    // Creates all parent folders, and saves entire list into a given file with a "CSV" like file structure.
+    public void saveToFile(String strPath) {
+        Path path = Paths.get(strPath);
+        if (Files.notExists(path.getParent())) {
+            try {
+                Files.createDirectories(path.getParent());
+            } catch (IOException e) {
+                System.out.println("Unable to do something with creating directories");
+                // e.printStackTrace();
+            }
+        }
+    
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toString()))) {
+            for (ListItem item : this.listItems) {
+                writer.write(item.saveString());
+                writer.newLine();
+            }
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Unable to do something with bufferedwriter");
+            // e.printStackTrace();
         }
     }
 
