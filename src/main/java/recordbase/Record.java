@@ -1,4 +1,10 @@
+package recordbase;
 import java.util.Scanner;
+
+import recordbase.types.List;
+import recordbase.exceptions.RecordException;
+import recordbase.utils.ListParser;
+import recordbase.utils.Storage;
 
 public class Record {
     // private static List[] taskList;

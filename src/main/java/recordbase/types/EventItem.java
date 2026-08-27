@@ -1,3 +1,4 @@
+package recordbase.types;
 import java.time.LocalDateTime;
 
 public class EventItem extends ListItem {

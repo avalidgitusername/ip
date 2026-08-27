@@ -1,3 +1,4 @@
+package recordbase.utils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -5,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import recordbase.exceptions.RecordException;
+import recordbase.types.List;
 
 public class ListParser {
     // Patterns generated using AI.
@@ -54,7 +57,7 @@ public class ListParser {
      * @param list
      * @return Index of the new ListItem. -1 if no ListItem was created.
      */
-    static int createListToDoFromLocalDT(String command, List list) {
+    public static int createListToDoFromLocalDT(String command, List list) {
         System.out.print(String.format("Parsing: %s", command));
         Matcher matcher = TODO_PATTERN.matcher(command);
 
@@ -72,7 +75,7 @@ public class ListParser {
      * @param list
      * @return Index of the new ListItem. -1 if no ListItem was created.
      */
-    static int createListDeadlineFromLocalDT(String command, List list) {
+    public static int createListDeadlineFromLocalDT(String command, List list) {
         Matcher matcher = DEADLINE_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
@@ -92,7 +95,7 @@ public class ListParser {
      * @param list
      * @return Index of the new ListItem. -1 if no ListItem was created.
      */
-    static int createListEventFromLocalDT(String command, List list) {
+    public static int createListEventFromLocalDT(String command, List list) {
         Matcher matcher = EVENT_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
