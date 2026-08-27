@@ -1,8 +1,8 @@
 package recordbase;
 import java.util.Scanner;
 
-import recordbase.types.List;
 import recordbase.exceptions.RecordException;
+import recordbase.types.List;
 import recordbase.utils.ListParser;
 import recordbase.utils.Storage;
 
@@ -51,7 +51,12 @@ public class Record {
             while (b_cont) {
                 try {
                     System.out.println(text_ask);
-                    String user_input = scanner.nextLine();
+                    String user_input;
+                    // if (!scanner.hasNextLine()) {
+                        // user_input = "";
+                    // } else {
+                        user_input = scanner.nextLine();
+                    // }
 
                     boolean listItemOptionParsed = false;
                     

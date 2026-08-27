@@ -2,11 +2,14 @@ plugins {
     id 'java'
     id 'application'
     id 'com.gradleup.shadow' version '9.5.1'
-}
-
+    id 'checkstyle'
+}   
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 repositories {
@@ -37,7 +40,7 @@ test {
 }
 
 application {
-    mainClass = 'seedu.duke.Duke'
+    mainClass = 'recordbase.Record'
 }
 
 jar {
@@ -48,9 +51,17 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = 'duke.jar'
+    archiveFileName = 'record.jar'
+}
+
+checkstyle {
+    toolVersion = '11.0.0'
 }
 
 run {
+    standardInput = System.in
+}
+
+tasks.named('run') {
     standardInput = System.in
 }
