@@ -1,8 +1,10 @@
+import java.time.LocalDateTime;
+
 public class EventItem extends ListItem {
 
-    private String fromDate;
-    private String toDate;
-    public EventItem(String task, String fromDate, String toDate) {
+    private LocalDateTime fromDate;
+    private LocalDateTime toDate;
+    public EventItem(String task, LocalDateTime fromDate, LocalDateTime toDate) {
         super(task);
         this.fromDate = fromDate;
         this.toDate = toDate;

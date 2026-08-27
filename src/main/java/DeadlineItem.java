@@ -1,7 +1,10 @@
-public class DeadlineItem extends ListItem {
-    private String byDate;
 
-    public DeadlineItem(String task, String byDate) {
+import java.time.LocalDateTime;
+
+public class DeadlineItem extends ListItem {
+    private LocalDateTime byDate;
+
+    public DeadlineItem(String task, LocalDateTime byDate) {
         super(task);
         this.byDate = byDate;
     };
