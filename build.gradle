@@ -4,6 +4,10 @@ plugins {
     id 'com.gradleup.shadow' version '9.5.1'
     id 'checkstyle'
 }   
+
+group = 'recordbase'
+version = '0.0.1'
+
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
@@ -50,8 +54,19 @@ jar {
     archiveClassifier = 'without-dependencies'
 }
 
-shadowJar {
-    archiveFileName = 'record.jar'
+// shadowJar {
+//     archiveFileName = 'record.jar'
+// }
+tasks.named('shadowJar') {
+    archiveBaseName = 'record'
+    archiveVersion = project.version.toString()
+    archiveClassifier = 'all'
+
+    mergeServiceFiles()
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
 }
 
 checkstyle {
