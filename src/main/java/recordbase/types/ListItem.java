@@ -1,3 +1,4 @@
+package recordbase.types;
 public class ListItem {
     protected final String task;
     protected boolean isDone = false;
