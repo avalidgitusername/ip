@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 
 public class List {
     private int listItemCounter = 0;
@@ -52,7 +54,7 @@ public class List {
         }
     }
 
-    public int addEventItem(String task, String fromDate, String toDate) {
+    public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate) {
         this.listItems.add(new EventItem(task, fromDate, toDate));
         this.listItemCounter++;
         return this.listItemCounter-1;
@@ -66,7 +68,7 @@ public class List {
         // }
     }
 
-    public int addDeadlineItem(String task, String byDate) {
+    public int addDeadlineItem(String task, LocalDateTime byDate) {
         this.listItems.add(new DeadlineItem(task, byDate));
         this.listItemCounter++;
         return this.listItemCounter-1;
@@ -129,7 +131,9 @@ public class List {
     
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toString()))) {
             for (ListItem item : this.listItems) {
-                writer.write(item.saveString());
+                // Escapt the apostrophe to prevent errors.
+                String tempStr = item.saveString().replaceAll("\'", "\\\'");
+                writer.write(tempStr);
                 writer.newLine();
             }
             writer.flush();
@@ -171,7 +175,8 @@ public class List {
                         int taskByDateEnd = tempStr.lastIndexOf("'");
 
                         String task = tempStr.substring(taskIndexStart + 3, taskIndexEnd);
-                        String byDate = tempStr.substring(taskByDateStart + 3, taskByDateEnd);
+                        String byDateStr = tempStr.substring(taskByDateStart + 3, taskByDateEnd);
+                        LocalDateTime byDate = LocalDateTime.parse(byDateStr);
                         addDeadlineItem(task, byDate);
                         if (tempStr.charAt(3) == '1') {
                             this.listItems.getLast().setDone();
@@ -189,8 +194,10 @@ public class List {
                         int taskToDateEnd = tempStr.lastIndexOf("'");
 
                         String task = tempStr.substring(taskIndexStart + 3, taskIndexEnd);
-                        String fromDate = tempStr.substring(taskFromDateStart + 3, taskFromDateEnd - 1);
-                        String toDate = tempStr.substring(taskToDateStart + 3, taskToDateEnd);
+                        String fromDateStr = tempStr.substring(taskFromDateStart + 3, taskFromDateEnd);
+                        String toDateStr = tempStr.substring(taskToDateStart + 3, taskToDateEnd);
+                        LocalDateTime fromDate = LocalDateTime.parse(fromDateStr);
+                        LocalDateTime toDate = LocalDateTime.parse(toDateStr);
                         addEventItem(task, fromDate, toDate);
                         if (tempStr.charAt(3) == '1') {
                             this.listItems.getLast().setDone();

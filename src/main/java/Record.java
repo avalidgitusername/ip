@@ -4,6 +4,7 @@ public class Record {
     // private static List[] taskList;
     // private static int taskCounter = 0;
     private static List list;
+    // private static ListParser parser = new ListParser();
 
     public static void greet() {
         String dashBreak = "----------------------------------------\n";
@@ -126,8 +127,10 @@ public class Record {
                                 throw new RecordException("ListItem description of item is not given.");
                             }
 
-                            int listIndex = list.addToDoItem(task);
-                            echo_noted(list.getItem(listIndex).toString());
+                            int listIndex = ListParser.createListToDoFromLocalDT(user_input, list);
+                            if (listIndex != -1) {
+                                echo_noted(list.getItem(listIndex).toString());
+                            }
                         } else if (user_input.toLowerCase().startsWith("deadline ")) {
                             int startSearchIndex = user_input.toLowerCase().indexOf("/by ");
                             // Error handling
@@ -146,10 +149,12 @@ public class Record {
                                 throw new RecordException("ListItem description of item is not given.");
                             }
 
-                            String byDate = user_input.substring(startSearchIndex + 3).strip();
+                            // String byDate = user_input.substring(startSearchIndex + 3).strip();
 
-                            int listIndex = list.addDeadlineItem(task, byDate);
-                            echo_noted(list.getItem(listIndex).toString());
+                            int listIndex = ListParser.createListDeadlineFromLocalDT(user_input, list);
+                            if (listIndex != -1) {
+                                echo_noted(list.getItem(listIndex).toString());
+                            }
                         } else if (user_input.toLowerCase().startsWith("event ")) {
                             int startSearchFromDateIndex = user_input.toLowerCase().indexOf("/from ");
                             // Error handling
@@ -180,11 +185,10 @@ public class Record {
                                 throw new RecordException("ListItem description of item is not given.");
                             }
 
-                            String fromDate = user_input.substring(startSearchFromDateIndex + 5, startSearchToDateIndex).strip();
-                            String toDate = user_input.substring(startSearchToDateIndex + 3).strip();
-                            int listIndex = list.addEventItem(task, fromDate, toDate);
-                            echo_noted(list.getItem(listIndex).toString());
-
+                            int listIndex = ListParser.createListEventFromLocalDT(user_input, list);
+                            if (listIndex != -1) {
+                                echo_noted(list.getItem(listIndex).toString());
+                            }
                         } 
                         else {
                         //     list.addItem(user_input);
