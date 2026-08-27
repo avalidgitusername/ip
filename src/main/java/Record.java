@@ -205,13 +205,13 @@ public class Record {
 
     public static void saveList(String strPath) {
         if (Record.list != null) {
-            Record.list.saveToFile(strPath);
+            Storage.saveToFile(Record.list, strPath);
         }
     }
 
     public static void retrieveList(String strPath) {
         Record.list = new List();
-        Record.list.loadFromFile(strPath);
+        Storage.loadFromFile(Record.list, strPath);
     }
 
     public static void main(String[] args) {
