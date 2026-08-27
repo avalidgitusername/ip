@@ -222,7 +222,11 @@ public class Record {
 
     public static void retrieveList(String strPath) {
         Record.list = new List();
-        Storage.loadFromFile(Record.list, strPath);
+        try {
+            Storage.loadFromFile(Record.list, strPath);
+        } catch (RecordException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
