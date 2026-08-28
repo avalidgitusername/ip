@@ -24,6 +24,7 @@ dependencies {
     String jUnitVersion = '5.14.4'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.14.4'
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
@@ -79,4 +80,8 @@ run {
 
 tasks.named('run') {
     standardInput = System.in
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

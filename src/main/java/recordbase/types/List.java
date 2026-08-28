@@ -1,6 +1,7 @@
 package recordbase.types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+
 import recordbase.exceptions.RecordException;
 public class List {
     private int listItemCounter = 0;
