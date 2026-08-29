@@ -122,6 +122,26 @@ public class List {
         return this.listItems;
     }
 
+    /**
+     * Searches the description of all tasks in the current list for a specific string.
+     * @param searchStr
+     * @return An ArrayList of all matching ListItems
+     */
+    public ArrayList<ListItem> searchItems(String searchStr) {
+        ArrayList<ListItem> matches = new ArrayList<>();
+        String searchTermLowercase = searchStr.toLowerCase();
+
+        if (this.listItems != null) {
+            for (ListItem item : this.listItems) {
+                if (((ListItem) item).toString().toLowerCase().contains(searchTermLowercase)) {
+                    matches.add(item);
+                }
+            }
+        }
+
+        return matches;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("");

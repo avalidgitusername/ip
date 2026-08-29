@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import recordbase.exceptions.RecordException;
@@ -274,5 +275,99 @@ public class ListTest {
                 "1. [T] [ ] First\n"
             + "2. [T] [ ] Second\n",
                 list.toString());
+    }
+
+    @Test
+    public void searchItems_matchingIsCaseInsensitive_returnsMatchingItem() {
+        List list = new List();
+
+        list.addToDoItem("Buy groceries");
+        list.addToDoItem("Read John's book");
+        list.addToDoItem("Watch \"The Matrix\"");
+        list.addDeadlineItem("Finish CS2103T assignment", LocalDateTime.now());
+        ArrayList<ListItem> results = list.searchItems("BUY GROCERIES");
+
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).toString().contains("Buy groceries"));
+    }
+
+    @Test
+    public void searchItems_partialMatch_returnsMatchingItems() {
+        List list = new List();
+
+        list.addToDoItem("Buy groceries");
+        list.addToDoItem("Read John's book");
+        list.addToDoItem("Watch \"The Matrix\"");
+        list.addToDoItem("Finish CS2103T assignment");
+        ArrayList<ListItem> results = list.searchItems("book");
+
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).toString().contains("Read John's book"));
+    }
+
+    @Test
+    public void searchItems_apostropheInSearchTerm_returnsMatchingItem() {
+        List list = new List();
+
+        list.addToDoItem("Buy groceries");
+        list.addToDoItem("Read John's book");
+        list.addToDoItem("Watch \"The Matrix\"");
+        list.addToDoItem("Finish CS2103T assignment");
+        ArrayList<ListItem> results = list.searchItems("John's book");
+
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).toString().contains("Read John's book"));
+    }
+
+    @Test
+    public void searchItems_doubleQuotesInSearchTerm_returnsMatchingItem() {
+        List list = new List();
+
+        list.addToDoItem("Buy groceries");
+        list.addToDoItem("Read John's book");
+        list.addToDoItem("Watch \"The Matrix\"");
+        list.addToDoItem("Finish CS2103T assignment");
+        ArrayList<ListItem> results = list.searchItems("\"The Matrix\"");
+
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).toString().contains("Watch \"The Matrix\""));
+    }
+
+    @Test
+    public void searchItems_multipleMatches_returnsAllMatchingItems() {
+        List list = new List();
+
+        list.addToDoItem("Buy groceries");
+        list.addDeadlineItem("Read John's book", LocalDateTime.now());
+        list.addToDoItem("Watch \"The Matrix\"");
+        list.addToDoItem("Finish CS2103T assignment");
+        list.addEventItem("Buy groceries for John's dinner", LocalDateTime.now(), LocalDateTime.now());
+
+        ArrayList<ListItem> results = list.searchItems("OHN");
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    public void searchItems_noMatch_returnsEmptyList() {
+        List list = new List();
+
+        ArrayList<ListItem> results = list.searchItems("nonexistent task");
+
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void searchItems_exactMatch_returnsMatchingItem() {
+        List list = new List();
+
+        list.addToDoItem("Buy groceries");
+        list.addToDoItem("Read John's book");
+        list.addToDoItem("Watch \"The Matrix\"");
+        list.addToDoItem("Finish CS2103T assignment");
+        ArrayList<ListItem> results = list.searchItems("Finish CS2103T assignment");
+
+        assertEquals(1, results.size());
+        assertTrue(results.get(0).toString().contains("Finish CS2103T assignment"));
     }
 }
