@@ -13,6 +13,9 @@ src/main/resources/docs/
 *.iml
 bin/
 
+# VSCode files
+/.vscode/
+
 # Temp files
 _temp/
 

@@ -1,4 +1,5 @@
 package recordbase.utils;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,14 +17,13 @@ import recordbase.types.ToDoItem;
 
 /**
  * Provides methods for saving and loading {@code ListItem} objects to and from files.
- * 
+ *
  * <p>The class handles conversion between list items and their file-based representation.</p>
  */
 public class Storage {
-
     /**
      * Saves all items in the specified list to a file.
-     * 
+     *
      * @param list the list whose items are saved
      * @param fileName the name of the file to save the list to
      * @throws RecordException if the file cannot be created or written to
@@ -37,7 +37,6 @@ public class Storage {
                     Files.createDirectories(path.getParent());
                 } catch (IOException e) {
                     System.out.println("Unable to do something with creating directories");
-                    // e.printStackTrace();
                 }
             }
 
@@ -55,7 +54,7 @@ public class Storage {
 
     /**
      * Loads items from a file and adds them to the specified list.
-     * 
+     *
      * @param list the list to which the loaded items are added
      * @param fileName the name of the file to load from
      * @throws RecordException if the file does not exist or cannot be read
@@ -83,7 +82,7 @@ public class Storage {
 
     /**
      * Parses a line from a save file into a {@code ListItem}.
-     * 
+     *
      * @param line the line representing a saved list item
      * @return the {@code ListItem} represented by the line
      * @throws RecordException if the line contains an unknown item type
@@ -118,7 +117,7 @@ public class Storage {
 
     /**
      * Parses a saved to-do item from a line in the save file.
-     * 
+     *
      * @param line the line representing the saved to-do item
      * @return the parsed {@code ToDoItem}
      */
@@ -130,10 +129,10 @@ public class Storage {
 
         return new ToDoItem(task);
     }
-    
+
     /**
      * Parses a saved deadline item from a line in the save file.
-     * 
+     *
      * @param line the line representing the saved deadline item
      * @return the parsed {@code DeadlineItem}
      */
@@ -153,7 +152,7 @@ public class Storage {
 
     /**
      * Parses a saved event item from a line in the save file.
-     * 
+     *
      * @param line the line representing the saved event item
      * @return the parsed {@code EventItem}
      */
