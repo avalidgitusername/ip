@@ -2,9 +2,21 @@ package recordbase.types;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents a task with a specified deadline.
+ * 
+ * <p>A {@code DeadlineItem} stores the task description and the date and time by which the task
+ * should be completed.</p>
+ */
 public class DeadlineItem extends ListItem {
     private LocalDateTime byDate;
 
+    /**
+     * Constructs a {@code DeadlineItem} with the specified task description and deadline.
+     * 
+     * @param task the description of the task
+     * @param byDate the date and time which the task should be completed
+     */
     public DeadlineItem(String task, LocalDateTime byDate) {
         super(task);
         this.byDate = byDate;

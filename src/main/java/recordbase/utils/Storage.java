@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+
 import recordbase.exceptions.RecordException;
 import recordbase.types.DeadlineItem;
 import recordbase.types.EventItem;
@@ -13,8 +14,20 @@ import recordbase.types.List;
 import recordbase.types.ListItem;
 import recordbase.types.ToDoItem;
 
+/**
+ * Provides methods for saving and loading {@code ListItem} objects to and from files.
+ * 
+ * <p>The class handles conversion between list items and their file-based representation.</p>
+ */
 public class Storage {
 
+    /**
+     * Saves all items in the specified list to a file.
+     * 
+     * @param list the list whose items are saved
+     * @param fileName the name of the file to save the list to
+     * @throws RecordException if the file cannot be created or written to
+     */
     public static void saveToFile(List list, String fileName) {
         Path path = Paths.get(fileName);
 
@@ -40,6 +53,13 @@ public class Storage {
         }
     }
 
+    /**
+     * Loads items from a file and adds them to the specified list.
+     * 
+     * @param list the list to which the loaded items are added
+     * @param fileName the name of the file to load from
+     * @throws RecordException if the file does not exist or cannot be read
+     */
     public static void loadFromFile(List list, String fileName) {
         Path path = Paths.get(fileName);
 
@@ -61,6 +81,13 @@ public class Storage {
         }
     }
 
+    /**
+     * Parses a line from a save file into a {@code ListItem}.
+     * 
+     * @param line the line representing a saved list item
+     * @return the {@code ListItem} represented by the line
+     * @throws RecordException if the line contains an unknown item type
+     */
     private static ListItem parseItem(String line) {
         char itemType = line.charAt(0);
         boolean isDone = line.charAt(3) == '1';
@@ -89,6 +116,12 @@ public class Storage {
         return item;
     }
 
+    /**
+     * Parses a saved to-do item from a line in the save file.
+     * 
+     * @param line the line representing the saved to-do item
+     * @return the parsed {@code ToDoItem}
+     */
     private static ListItem parseToDoItem(String line) {
         int taskStart = line.indexOf(", '") + 3;
         int taskEnd = line.lastIndexOf("'");
@@ -97,7 +130,13 @@ public class Storage {
 
         return new ToDoItem(task);
     }
-
+    
+    /**
+     * Parses a saved deadline item from a line in the save file.
+     * 
+     * @param line the line representing the saved deadline item
+     * @return the parsed {@code DeadlineItem}
+     */
     private static ListItem parseDeadlineItem(String line) {
         int taskStart = line.indexOf(", '") + 3;
         int taskEnd = line.indexOf("', ", taskStart);
@@ -112,6 +151,12 @@ public class Storage {
         return new DeadlineItem(task, byDate);
     }
 
+    /**
+     * Parses a saved event item from a line in the save file.
+     * 
+     * @param line the line representing the saved event item
+     * @return the parsed {@code EventItem}
+     */
     private static ListItem parseEventItem(String line) {
         int taskStart = line.indexOf(", '") + 3;
         int taskEnd = line.indexOf("', ", taskStart);

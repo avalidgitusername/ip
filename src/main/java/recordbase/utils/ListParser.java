@@ -6,9 +6,16 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import recordbase.exceptions.RecordException;
 import recordbase.types.List;
 
+/**
+ * Provides methods for parsing user commands into {@code ListItem} objects.
+ * 
+ * <p>The parser validates commands formats and extracts task details, dates, and times before adding
+ * the corresponding items into a {@code List}.</p>
+ */
 public class ListParser {
     // Patterns generated using AI.
     private static final Pattern TODO_PATTERN = Pattern.compile(
@@ -52,10 +59,12 @@ public class ListParser {
     }
 
     /**
-     * Creates a ToDo ListItem given a properly formatted input
-     * @param command
-     * @param list
-     * @return Index of the new ListItem. -1 if no ListItem was created.
+     * Creates a {@code ToDoItem} from a properly formatted command and adds it to the specified list.
+     * 
+     * @param command the command containing the task description
+     * @param list the list to which the new to-do item is added
+     * @return the index of the newly created item
+     * @throws RecordException if the command is not properly formatted
      */
     public static int createListToDoFromLocalDT(String command, List list) {
         System.out.print(String.format("Parsing: %s", command));
@@ -67,13 +76,15 @@ public class ListParser {
         String task = matcher.group("task");
 
         return list.addToDoItem(task);
-    }
+    }   
 
     /**
-     * Creates a Deadline ListItem given a properly formatted input
-     * @param command
-     * @param list
-     * @return Index of the new ListItem. -1 if no ListItem was created.
+     * Creates a {@code DeadlineItem} from a properly formatted command and adds it to the specified list.
+     * 
+     * @param command the command containing the task description and deadline
+     * @param list the list to which the new deadline item is added
+     * @return the index of the newly created item
+     * @throws RecordException if the command is not properly formatted
      */
     public static int createListDeadlineFromLocalDT(String command, List list) {
         Matcher matcher = DEADLINE_PATTERN.matcher(command);
@@ -90,10 +101,12 @@ public class ListParser {
 
     
     /**
-     * Creates a Event ListItem given a properly formatted input
-     * @param command
-     * @param list
-     * @return Index of the new ListItem. -1 if no ListItem was created.
+     * Creates a {@code EventItem} from a properly formatted command and adds it to the specified list.
+     * 
+     * @param command the command containing the task description and event times
+     * @param list the list to which the new event item is added
+     * @return the index of the newly created item
+     * @throws RecordException if the command is not properly formatted
      */
     public static int createListEventFromLocalDT(String command, List list) {
         Matcher matcher = EVENT_PATTERN.matcher(command);

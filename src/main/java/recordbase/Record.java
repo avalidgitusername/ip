@@ -6,12 +6,21 @@ import recordbase.types.List;
 import recordbase.utils.ListParser;
 import recordbase.utils.Storage;
 
+/**
+ * Provides the main entry point and user interface for the Record application.
+ * 
+ * <p>The class handles user interactions, command processing, list management,
+ * and loading and saving the task list.</p>
+ */
 public class Record {
     // private static List[] taskList;
     // private static int taskCounter = 0;
     private static List list;
     // private static ListParser parser = new ListParser();
 
+    /**
+     * Displays the greeting banner and introductory message for the Record service.
+     */
     public static void greet() {
         String dashBreak = "----------------------------------------\n";
         // Note banners have newline characters separated for ease of modification in escaped characters.
@@ -30,6 +39,10 @@ public class Record {
 
         System.out.println(sb);
     }
+
+    /**
+     * Displays the goodbye message when exiting the Record service.
+     */
     public static void goodbye() {
         String dashBreak = "----------------------------------------\n";
 
@@ -40,10 +53,20 @@ public class Record {
         System.out.println(sb);
     }
 
+    /**
+     * Displays a confirmation message containing the specified string.
+     * 
+     * @param str the string to display in the confirmation message
+     */
     public static void echo_noted(String str) {
         System.out.println("> Noted. I've recorded down: " + str);
     }
 
+    /**
+     * Continuously reads and processes commands entered by the user.
+     * 
+     * <p>Supported commands include creating, listing, marking, unmarking, deleting, and exiting the list.</p>
+     */
     public static void ask_input() {
         boolean b_cont = true;
         String text_ask = "What else should I Record down?\n";
@@ -214,12 +237,22 @@ public class Record {
         }
     }
 
+    /**
+     * Saves the current list to the specified file.
+     * 
+     * @param strPath the path of the file to save the list to
+     */
     public static void saveList(String strPath) {
         if (Record.list != null) {
             Storage.saveToFile(Record.list, strPath);
         }
     }
 
+    /**
+     * Loads a list from the specified file and sets it as the current list.
+     * 
+     * @param strPath the path of the file from which to load the list
+     */
     public static void retrieveList(String strPath) {
         Record.list = new List();
         try {
@@ -229,6 +262,12 @@ public class Record {
         }
     }
 
+    /**
+     * Starts the Record application by displaying the greeting, loading the saved list, accepting user input,
+     * saving the list, and displaying the goodbye message.
+     * 
+     * @param args command-line arguments
+     */
     public static void main(String[] args) {
         greet();
         retrieveList("data/listdata.txt");
