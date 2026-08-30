@@ -1,11 +1,11 @@
 package recordbase.types;
 public class ListItem {
-    protected final String task;
+    protected final String taskDesc;
     protected boolean isDone = false;
 
-    public ListItem(String task) {
-        this.task = task;
-    };
+    public ListItem(String taskDesc) {
+        this.taskDesc = taskDesc;
+    }
 
     public void setDone() {
         this.isDone = true;
@@ -26,8 +26,7 @@ public class ListItem {
         sb.append("[");
         sb.append(this.isDone ? "X" : " "); // Ternary operator
         sb.append("] ");
-        sb.append(this.task);
+        sb.append(this.taskDesc);
         return sb.toString();
     }
-
 }

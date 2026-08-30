@@ -1,4 +1,5 @@
 package recordbase.exceptions;
+
 public class RecordException extends RuntimeException {
 
     public RecordException(String errorMessage) {

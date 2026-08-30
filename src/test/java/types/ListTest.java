@@ -1,10 +1,11 @@
 package types;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import recordbase.exceptions.RecordException;
@@ -12,6 +13,7 @@ import recordbase.types.List;
 import recordbase.types.ListItem;
 
 public class ListTest {
+
     @Test
     void deleteItem_removesCorrectItemAndUpdatesList() {
         List list = new List();
@@ -55,11 +57,10 @@ public class ListTest {
         List list = new List();
         list.addToDoItem("Only item");
 
-        RecordException negativeIndexException =
-                assertThrows(RecordException.class, () -> list.deleteItem(-1));
+        RecordException negativeIndexException = assertThrows(RecordException.class, () -> list.deleteItem(-1));
 
-        RecordException tooLargeIndexException =
-                assertThrows(RecordException.class, () -> list.deleteItem(1));
+        RecordException tooLargeIndexException = assertThrows(RecordException.class, () -> list
+                .deleteItem(1));
 
         assertEquals(
                 "ListError: No such index to delete.",
@@ -69,6 +70,7 @@ public class ListTest {
                 "ListError: No such index to delete.",
                 tooLargeIndexException.getMessage());
     }
+
     @Test
     void addItem_addsItemAndReturnsCorrectIndex() {
         List list = new List();
@@ -91,6 +93,7 @@ public class ListTest {
 
         assertEquals(3, list.getItems().size());
     }
+
     @Test
     void addToDoItem_addsToDoItemAndReturnsIndex() {
         List list = new List();
@@ -101,6 +104,7 @@ public class ListTest {
         assertEquals("[T] [ ] Read book", list.getItem(index).toString());
         assertEquals(1, list.getItems().size());
     }
+
     @Test
     void addDeadlineItem_addsDeadlineItemAndReturnsIndex() {
         List list = new List();
@@ -114,6 +118,7 @@ public class ListTest {
                 list.getItem(index).toString());
         assertEquals(1, list.getItems().size());
     }
+
     @Test
     void addEventItem_addsEventItemAndReturnsIndex() {
         List list = new List();
@@ -128,6 +133,7 @@ public class ListTest {
                 list.getItem(index).toString());
         assertEquals(1, list.getItems().size());
     }
+
     @Test
     void deleteItem_removesCorrectItemAndShiftsRemainingItems() {
         List list = new List();
@@ -143,6 +149,7 @@ public class ListTest {
         assertEquals("[T] [ ] First", list.getItem(0).toString());
         assertEquals("[T] [ ] Third", list.getItem(1).toString());
     }
+
     @Test
     void deleteItem_canDeleteFirstAndLastItems() {
         List list = new List();
@@ -157,7 +164,7 @@ public class ListTest {
         assertEquals(1, list.getItems().size());
         assertEquals("[T] [ ] Second", list.getItem(0).toString());
     }
-    
+
     @Test
     void setListItemDone_marksItemAsDone() {
         List list = new List();
@@ -165,9 +172,9 @@ public class ListTest {
 
         list.setListItemDone(0);
 
-        assertEquals("[T] [X] Complete assignment",
-                list.getItem(0).toString());
+        assertEquals("[T] [X] Complete assignment", list.getItem(0).toString());
     }
+
     @Test
     void setListItemNotDone_marksPreviouslyDoneItemAsNotDone() {
         List list = new List();
@@ -179,20 +186,17 @@ public class ListTest {
         assertEquals("[T] [ ] Complete assignment",
                 list.getItem(0).toString());
     }
+
     @Test
     void setListItemDone_withInvalidIndex_throwsRecordException() {
         List list = new List();
         list.addToDoItem("Task");
 
-        RecordException negativeIndexException =
-                assertThrows(
-                        RecordException.class,
-                        () -> list.setListItemDone(-1));
+        RecordException negativeIndexException = assertThrows(RecordException.class, () -> list
+                .setListItemDone(-1));
 
-        RecordException tooLargeIndexException =
-                assertThrows(
-                        RecordException.class,
-                        () -> list.setListItemDone(1));
+        RecordException tooLargeIndexException = assertThrows(RecordException.class, () -> list
+                .setListItemDone(1));
 
         assertEquals(
                 "Error in mark: No such item on list.",
@@ -202,20 +206,17 @@ public class ListTest {
                 "Error in mark: No such item on list.",
                 tooLargeIndexException.getMessage());
     }
+
     @Test
     void setListItemNotDone_withInvalidIndex_throwsRecordException() {
         List list = new List();
         list.addToDoItem("Task");
 
-        RecordException negativeIndexException =
-                assertThrows(
-                        RecordException.class,
-                        () -> list.setListItemNotDone(-1));
+        RecordException negativeIndexException = assertThrows(RecordException.class, () -> list
+                .setListItemNotDone(-1));
 
-        RecordException tooLargeIndexException =
-                assertThrows(
-                        RecordException.class,
-                        () -> list.setListItemNotDone(1));
+        RecordException tooLargeIndexException = assertThrows(RecordException.class, () -> list
+                .setListItemNotDone(1));
 
         assertEquals(
                 "Error in unmark: No such item on list.",
@@ -225,6 +226,7 @@ public class ListTest {
                 "Error in unmark: No such item on list.",
                 tooLargeIndexException.getMessage());
     }
+
     @Test
     void getItem_returnsNullForInvalidIndex() {
         List list = new List();
@@ -233,6 +235,7 @@ public class ListTest {
         assertEquals(null, list.getItem(-1));
         assertEquals(null, list.getItem(1));
     }
+
     @Test
     void getItems_returnsAllItemsInInsertionOrder() {
         List list = new List();
@@ -257,12 +260,14 @@ public class ListTest {
                 "[E] [ ] Third (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
                 items.get(2).toString());
     }
+
     @Test
     void toString_returnsMessageForEmptyList() {
         List list = new List();
 
         assertEquals("No items in list!", list.toString());
     }
+
     @Test
     void toString_returnsNumberedItemsWithNewlines() {
         List list = new List();
@@ -272,7 +277,7 @@ public class ListTest {
 
         assertEquals(
                 "1. [T] [ ] First\n"
-            + "2. [T] [ ] Second\n",
+                + "2. [T] [ ] Second\n",
                 list.toString());
     }
 }
