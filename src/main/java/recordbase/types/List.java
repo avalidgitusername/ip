@@ -110,15 +110,24 @@ public class List {
      * Marks the item at the specified index as done.
      *
      * @param index the index of the item to mark as done
+     * @return the string containing a completion confirmation and the marked item's details
      * @throws RecordException if the specified index is out of bounds
      */
-    public void setListItemDone(int index) {
+    public String setListItemDone(int index) {
         if (index < 0 || index >= this.listItemCounter) {
             throw new RecordException("Error in mark: No such item on list.");
         } else {
             this.listItems.get(index).setDone();
-            System.out.println("Nice...You've marked the item done.");
-            System.out.println(this.listItems.get(index));
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Nice...You've marked the item done.\n");
+            sb.append(this.listItems.get(index));
+            sb.append("\n");
+
+            // System.out.println("Nice...You've marked the item done.");
+            // System.out.println(this.listItems.get(index));
+
+            return sb.toString();
         }
     }
 
@@ -126,16 +135,24 @@ public class List {
      * Marks the item at the specified index as not done.
      *
      * @param index the index of the item to mark as not done
+     * @return the string containing a completion confirmation and the unmarked item's details
      * @throws RecordException if the specified index is out of bounds
      */
-    public void setListItemNotDone(int index) {
+    public String setListItemNotDone(int index) {
         if (index < 0 || index >= this.listItemCounter) {
             throw new RecordException("Error in unmark: No such item on list.");
         } else {
             this.listItems.get(index).setNotDone();
 
-            System.out.println("Alright. Item marked as not done.");
-            System.out.println(this.listItems.get(index));
+            // System.out.println("Alright. Item marked as not done.");
+            // System.out.println(this.listItems.get(index));
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Nice...You've marked the item done.\n");
+            sb.append(this.listItems.get(index));
+            sb.append("\n");
+
+            return sb.toString();
         }
     }
 
