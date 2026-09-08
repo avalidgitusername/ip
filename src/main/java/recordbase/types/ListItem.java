@@ -13,6 +13,8 @@ public class ListItem {
      * @param task the description of the task
      */
     public ListItem(String taskDesc) {
+        assert taskDesc != null : "Task description must not be null";
+
         this.taskDesc = taskDesc;
     }
 

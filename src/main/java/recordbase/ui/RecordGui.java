@@ -128,11 +128,20 @@ public class RecordGui extends Application {
 
 
         // -----Part 4-----
+        assert stage != null : "Primary stage must not be null";
+
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(RecordGui.class.getResource("/view/MainWindow.fxml"));
             AnchorPane ap = fxmlLoader.load();
+
+            assert ap != null : "Main window layout must be loaded";
+
             Scene scene = new Scene(ap);
             stage.setScene(scene);
+
+            assert fxmlLoader.<MainWindowController>getController() != null
+                    : "Main window controller must be loaded";
+
             fxmlLoader.<MainWindowController>getController().setRecord(record); // inject the Record instance
             stage.show();
         } catch (IOException e) {
@@ -275,6 +284,9 @@ public class RecordGui extends Application {
      * can be added later.</p>
      */
     private void submitUserInput() {
+        assert userInputArea != null : "User input area must be initialized";
+        assert userMessageContainer != null : "User message container must be initialized";
+
         String input = userInputArea.getText().trim();
 
         if (input.isEmpty()) {

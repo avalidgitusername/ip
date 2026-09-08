@@ -40,6 +40,11 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     public void initialize() {
+        assert scrollPane != null : "Scroll pane must be injected by FXML";
+        assert dialogContainer != null : "Dialog container must be injected by FXML";
+        assert userInput != null : "User input field must be injected by FXML";
+        assert sendButton != null : "Send button must be injected by FXML";
+
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
 
         // Open old list records.
@@ -54,6 +59,8 @@ public class MainWindowController extends AnchorPane {
     /** Injects the Record instance */
     @FXML
     public void setRecord(Record r) {
+        assert r != null : "Record instance must not be null";
+
         record = r;
     }
 
@@ -63,7 +70,12 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void handleSendUserInput() {
+        assert userInput != null : "User input field must be injected by FXML";
+        assert dialogContainer != null : "Dialog container must be injected by FXML";
+
         String input = userInput.getText();
+
+        assert input != null : "User input text must not be null";
 
         if (input.length() == 0) {
             // Do nothing
@@ -109,6 +121,8 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void handleButtonListItems() {
+        assert dialogContainer != null : "Dialog container must be injected by FXML";
+
         dialogContainer.getChildren().addAll(
             DialogBoxController.getRecordDialog(Record.parseInput("list"), recordProfileImage)
         );
@@ -120,6 +134,7 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void handleUpDownKeyPress(KeyEvent event) {
+        assert event != null : "Key event must not be null";
 
         // System.out.println("Handling action");
         switch (event.getCode()) {
@@ -143,6 +158,9 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void showPreviousUserInput() {
+        assert pastMessagesIndex >= 0 && pastMessagesIndex <= pastMessages.size()
+                : "Past message index must remain within valid bounds";
+
         if (pastMessagesIndex > 0) {
             pastMessagesIndex--;
             userInput.setText(pastMessages.get(pastMessagesIndex));
@@ -154,6 +172,9 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void showNextUserInput() {
+        assert pastMessagesIndex >= 0 && pastMessagesIndex <= pastMessages.size()
+                : "Past message index must remain within valid bounds";
+
         if (pastMessagesIndex < pastMessages.size() - 1) {
             pastMessagesIndex++;
             userInput.setText(pastMessages.get(pastMessagesIndex));

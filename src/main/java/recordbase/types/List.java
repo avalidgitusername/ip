@@ -39,8 +39,12 @@ public class List {
      * @return the index of the newly created item
      */
     public int addItem(ListItem item) {
+        assert item != null : "List item must not be null";
+
         this.listItems.add(item);
         this.listItemCounter++;
+
+        assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
 
         return this.listItemCounter - 1;
     }
@@ -60,6 +64,8 @@ public class List {
 
             this.listItemCounter--;
 
+            assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+
             return tmpStr;
         } else {
             throw new RecordException("ListError: No such index to delete.");
@@ -78,6 +84,8 @@ public class List {
         this.listItems.add(new EventItem(task, fromDate, toDate));
         this.listItemCounter++;
 
+        assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+
         return this.listItemCounter - 1;
     }
     /**
@@ -91,6 +99,8 @@ public class List {
         this.listItems.add(new DeadlineItem(task, byDate));
         this.listItemCounter++;
 
+        assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+
         return this.listItemCounter - 1;
     }
     /**
@@ -102,6 +112,8 @@ public class List {
     public int addToDoItem(String task) {
         this.listItems.add(new ToDoItem(task));
         this.listItemCounter++;
+
+        assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
 
         return this.listItemCounter - 1;
     }
@@ -117,6 +129,9 @@ public class List {
         if (index < 0 || index >= this.listItemCounter) {
             throw new RecordException("Error in mark: No such item on list.");
         } else {
+            assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+            assert this.listItems.get(index) != null : "List must not contain null items";
+
             this.listItems.get(index).setDone();
 
             StringBuilder sb = new StringBuilder();
@@ -142,6 +157,9 @@ public class List {
         if (index < 0 || index >= this.listItemCounter) {
             throw new RecordException("Error in unmark: No such item on list.");
         } else {
+            assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+            assert this.listItems.get(index) != null : "List must not contain null items";
+
             this.listItems.get(index).setNotDone();
 
             // System.out.println("Alright. Item marked as not done.");
@@ -162,6 +180,8 @@ public class List {
      * @return the {@code ArrayList} containing all items in the list
      */
     public ArrayList<ListItem> getItems() {
+        assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+
         return this.listItems;
     }
 
@@ -171,6 +191,9 @@ public class List {
      * @return An ArrayList of all matching ListItems
      */
     public ArrayList<ListItem> searchItems(String searchStr) {
+        assert searchStr != null : "Search term must not be null";
+        assert this.listItemCounter == this.listItems.size() : "List counter must match list size";
+
         ArrayList<ListItem> matches = new ArrayList<>();
         String searchTermLowercase = searchStr.toLowerCase();
 
