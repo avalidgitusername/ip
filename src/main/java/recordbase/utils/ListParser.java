@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import recordbase.exceptions.RecordException;
 import recordbase.types.List;
+import recordbase.types.Priority;
 
 /**
  * Provides methods for parsing user commands into {@code ListItem} objects.
@@ -20,13 +21,14 @@ import recordbase.types.List;
 public class ListParser {
     // Patterns generated using AI.
     private static final Pattern TODO_PATTERN = Pattern.compile(
-            "\\Atodo[ \\t]+(?<task>.+?)[ \\t]*\\z"
+            "\\Atodo[ \\t]+(?<task>.+?)(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?[ \\t]*\\z"
     );
 
     private static final Pattern DEADLINE_PATTERN = Pattern.compile(
             "\\Adeadline[ \\t]+(?<task>.+?)[ \\t]+/by[ \\t]+"
             + "(?<byDate>\\d{8})"
             + "(?:[ \\t]+(?<byTime>\\d{2}:\\d{2}))?"
+            + "(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?"
             + "\\z"
     );
 
@@ -37,6 +39,7 @@ public class ListParser {
             + "[ \\t]+/to[ \\t]+"
             + "(?<toDate>\\d{8})"
             + "(?:[ \\t]+(?<toTime>\\d{2}:\\d{2}))?"
+            + "(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?"
             + "\\z"
     );
 
@@ -61,6 +64,13 @@ public class ListParser {
     }
 
     /**
+     * Parses an optional priority, defaulting to medium when it is omitted.
+     */
+    private static Priority parsePriority(String priorityText) {
+        return priorityText == null ? Priority.MEDIUM : Priority.fromString(priorityText);
+    }
+
+    /**
      * Creates a {@code ToDoItem} from a properly formatted command and adds it to the specified list.
      *
      * @param command the command containing the task description
@@ -77,7 +87,7 @@ public class ListParser {
         }
         String task = matcher.group("task");
 
-        return list.addToDoItem(task);
+        return list.addToDoItem(task, parsePriority(matcher.group("priority")));
     }
 
     /**
@@ -98,7 +108,7 @@ public class ListParser {
         String task = matcher.group("task");
         LocalDateTime byDT = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
 
-        return list.addDeadlineItem(task, byDT);
+        return list.addDeadlineItem(task, byDT, parsePriority(matcher.group("priority")));
     }
 
     /**
@@ -120,6 +130,6 @@ public class ListParser {
         LocalDateTime fromDT = parseDateTime(matcher.group("fromDate"), matcher.group("fromTime"));
         LocalDateTime toDT = parseDateTime(matcher.group("toDate"), matcher.group("toTime"));
 
-        return list.addEventItem(task, fromDT, toDT);
+        return list.addEventItem(task, fromDT, toDT, parsePriority(matcher.group("priority")));
     }
 }

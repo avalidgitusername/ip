@@ -20,7 +20,19 @@ public class EventItem extends ListItem {
      */
 
     public EventItem(String taskDesc, LocalDateTime fromDate, LocalDateTime toDate) {
-        super(taskDesc);
+        this(taskDesc, fromDate, toDate, Priority.MEDIUM);
+    }
+
+    /**
+     * Constructs an event task with the specified description, duration, and priority.
+     *
+     * @param taskDesc the description of the task
+     * @param fromDate the date and time when the event starts
+     * @param toDate the date and time when the event ends
+     * @param priority the priority of the task
+     */
+    public EventItem(String taskDesc, LocalDateTime fromDate, LocalDateTime toDate, Priority priority) {
+        super(taskDesc, priority);
         this.fromDate = fromDate;
         this.toDate = toDate;
     }
@@ -39,7 +51,7 @@ public class EventItem extends ListItem {
 
     @Override
     public String saveString() {
-        return String.format("E, %s, '%s', '%s', '%s'", this.isDone ? "1" : "0",
-            this.taskDesc, this.fromDate, this.toDate);
+        return String.format("E, %s, %d, '%s', '%s', '%s'", this.isDone ? "1" : "0",
+            priority.getLevel(), this.taskDesc, this.fromDate, this.toDate);
     }
 }

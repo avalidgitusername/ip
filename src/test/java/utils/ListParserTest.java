@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import recordbase.exceptions.RecordException;
 import recordbase.types.List;
+import recordbase.types.Priority;
 import recordbase.utils.ListParser;
 
 public class ListParserTest {
@@ -44,6 +45,29 @@ public class ListParserTest {
         int index = ListParser.createListToDoFromLocalDT(command, list);
 
         assertTrue(index == 0);
+    }
+
+    @Test
+    void createListToDoFromLocalDT_withPriority_storesPriority() {
+        int index = ListParser.createListToDoFromLocalDT("todo Submit quiz /priority high", list);
+
+        assertTrue(list.getItem(index).getPriority() == Priority.HIGH);
+    }
+
+    @Test
+    void createListDeadlineFromLocalDT_withNumericPriority_storesPriority() {
+        int index = ListParser.createListDeadlineFromLocalDT(
+                "deadline Submit report /by 20260115 /priority 2", list);
+
+        assertTrue(list.getItem(index).getPriority() == Priority.MEDIUM_HIGH);
+    }
+
+    @Test
+    void createListEventFromLocalDT_withoutPriority_defaultsToMedium() {
+        int index = ListParser.createListEventFromLocalDT(
+                "event Meeting /from 20260115 /to 20260116", list);
+
+        assertTrue(list.getItem(index).getPriority() == Priority.MEDIUM);
     }
 
     @Test

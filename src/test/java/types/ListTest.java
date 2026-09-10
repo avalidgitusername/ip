@@ -29,13 +29,13 @@ public class ListTest {
 
         String deletedItem = list.deleteItem(1);
 
-        assertEquals("[D] [ ] Submit report (Due: 2026-09-01T23:59)",
+        assertEquals("[D] [ ] Submit report [Priority: Medium (3)] (Due: 2026-09-01T23:59)",
                 deletedItem);
 
         assertEquals(2, list.getItems().size());
-        assertEquals("[T] [ ] Read book", list.getItem(0).toString());
+        assertEquals("[T] [ ] Read book [Priority: Medium (3)]", list.getItem(0).toString());
         assertEquals(
-                "[E] [ ] Team meeting (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
+                "[E] [ ] Team meeting [Priority: Medium (3)] (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
                 list.getItem(1).toString());
     }
 
@@ -101,7 +101,7 @@ public class ListTest {
         int index = list.addToDoItem("Read book");
 
         assertEquals(0, index);
-        assertEquals("[T] [ ] Read book", list.getItem(index).toString());
+        assertEquals("[T] [ ] Read book [Priority: Medium (3)]", list.getItem(index).toString());
         assertEquals(1, list.getItems().size());
     }
 
@@ -114,7 +114,7 @@ public class ListTest {
 
         assertEquals(0, index);
         assertEquals(
-                "[D] [ ] Submit report (Due: 2026-09-01T23:59)",
+                "[D] [ ] Submit report [Priority: Medium (3)] (Due: 2026-09-01T23:59)",
                 list.getItem(index).toString());
         assertEquals(1, list.getItems().size());
     }
@@ -129,7 +129,7 @@ public class ListTest {
 
         assertEquals(0, index);
         assertEquals(
-                "[E] [ ] Team meeting (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
+                "[E] [ ] Team meeting [Priority: Medium (3)] (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
                 list.getItem(index).toString());
         assertEquals(1, list.getItems().size());
     }
@@ -144,10 +144,10 @@ public class ListTest {
 
         String deletedItem = list.deleteItem(1);
 
-        assertEquals("[T] [ ] Second", deletedItem);
+        assertEquals("[T] [ ] Second [Priority: Medium (3)]", deletedItem);
         assertEquals(2, list.getItems().size());
-        assertEquals("[T] [ ] First", list.getItem(0).toString());
-        assertEquals("[T] [ ] Third", list.getItem(1).toString());
+        assertEquals("[T] [ ] First [Priority: Medium (3)]", list.getItem(0).toString());
+        assertEquals("[T] [ ] Third [Priority: Medium (3)]", list.getItem(1).toString());
     }
 
     @Test
@@ -158,11 +158,11 @@ public class ListTest {
         list.addToDoItem("Second");
         list.addToDoItem("Third");
 
-        assertEquals("[T] [ ] First", list.deleteItem(0));
-        assertEquals("[T] [ ] Third", list.deleteItem(1));
+        assertEquals("[T] [ ] First [Priority: Medium (3)]", list.deleteItem(0));
+        assertEquals("[T] [ ] Third [Priority: Medium (3)]", list.deleteItem(1));
 
         assertEquals(1, list.getItems().size());
-        assertEquals("[T] [ ] Second", list.getItem(0).toString());
+        assertEquals("[T] [ ] Second [Priority: Medium (3)]", list.getItem(0).toString());
     }
 
     @Test
@@ -172,7 +172,7 @@ public class ListTest {
 
         list.setListItemDone(0);
 
-        assertEquals("[T] [X] Complete assignment", list.getItem(0).toString());
+        assertEquals("[T] [X] Complete assignment [Priority: Medium (3)]", list.getItem(0).toString());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class ListTest {
         list.setListItemDone(0);
         list.setListItemNotDone(0);
 
-        assertEquals("[T] [ ] Complete assignment",
+        assertEquals("[T] [ ] Complete assignment [Priority: Medium (3)]",
                 list.getItem(0).toString());
     }
 
@@ -252,12 +252,12 @@ public class ListTest {
         ArrayList<ListItem> items = list.getItems();
 
         assertEquals(3, items.size());
-        assertEquals("[T] [ ] First", items.get(0).toString());
+        assertEquals("[T] [ ] First [Priority: Medium (3)]", items.get(0).toString());
         assertEquals(
-                "[D] [ ] Second (Due: 2026-09-01T12:00)",
+                "[D] [ ] Second [Priority: Medium (3)] (Due: 2026-09-01T12:00)",
                 items.get(1).toString());
         assertEquals(
-                "[E] [ ] Third (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
+                "[E] [ ] Third [Priority: Medium (3)] (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
                 items.get(2).toString());
     }
 
@@ -276,8 +276,8 @@ public class ListTest {
         list.addToDoItem("Second");
 
         assertEquals(
-                "1. [T] [ ] First\n"
-                + "2. [T] [ ] Second\n",
+                "1. [T] [ ] First [Priority: Medium (3)]\n"
+                + "2. [T] [ ] Second [Priority: Medium (3)]\n",
                 list.toString());
     }
 }

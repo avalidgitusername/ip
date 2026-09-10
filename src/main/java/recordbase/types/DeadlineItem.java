@@ -18,7 +18,18 @@ public class DeadlineItem extends ListItem {
      * @param byDate the date and time which the task should be completed
      */
     public DeadlineItem(String taskDesc, LocalDateTime byDate) {
-        super(taskDesc);
+        this(taskDesc, byDate, Priority.MEDIUM);
+    }
+
+    /**
+     * Constructs a deadline task with the specified description, deadline, and priority.
+     *
+     * @param taskDesc the description of the task
+     * @param byDate the date and time by which the task should be completed
+     * @param priority the priority of the task
+     */
+    public DeadlineItem(String taskDesc, LocalDateTime byDate, Priority priority) {
+        super(taskDesc, priority);
         this.byDate = byDate;
     }
 
@@ -37,6 +48,7 @@ public class DeadlineItem extends ListItem {
 
     @Override
     public String saveString() {
-        return String.format("D, %s, '%s', '%s'", this.isDone ? "1" : "0", this.taskDesc, this.byDate);
+        return String.format("D, %s, %d, '%s', '%s'", this.isDone ? "1" : "0",
+                priority.getLevel(), this.taskDesc, this.byDate);
     }
 }

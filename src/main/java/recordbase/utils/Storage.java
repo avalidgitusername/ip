@@ -13,6 +13,7 @@ import recordbase.types.DeadlineItem;
 import recordbase.types.EventItem;
 import recordbase.types.List;
 import recordbase.types.ListItem;
+import recordbase.types.Priority;
 import recordbase.types.ToDoItem;
 
 /**
@@ -90,18 +91,19 @@ public class Storage {
     private static ListItem parseItem(String line) {
         char itemType = line.charAt(0);
         boolean isDone = line.charAt(3) == '1';
+        Priority priority = parsePriority(line);
 
         ListItem item;
 
         switch (itemType) {
             case 'T' -> {
-                item = parseToDoItem(line);
+                item = parseToDoItem(line, priority);
             }
             case 'D' -> {
-                item = parseDeadlineItem(line);
+                item = parseDeadlineItem(line, priority);
             }
             case 'E' -> {
-                item = parseEventItem(line);
+                item = parseEventItem(line, priority);
             }
             default -> {
                 throw new RecordException("Unknown item type: " + itemType);
@@ -116,18 +118,34 @@ public class Storage {
     }
 
     /**
+     * Parses the priority stored after the completion flag.
+     * Legacy records without a priority are treated as medium priority.
+     */
+    private static Priority parsePriority(String line) {
+        String remainder = line.substring(6);
+        if (remainder.startsWith("'")) {
+            return Priority.MEDIUM;
+        }
+        int separatorIndex = remainder.indexOf(',');
+        if (separatorIndex == -1) {
+            throw new RecordException("Saved item has no task description.");
+        }
+        return Priority.fromString(remainder.substring(0, separatorIndex));
+    }
+
+    /**
      * Parses a saved to-do item from a line in the save file.
      *
      * @param line the line representing the saved to-do item
      * @return the parsed {@code ToDoItem}
      */
-    private static ListItem parseToDoItem(String line) {
+    private static ListItem parseToDoItem(String line, Priority priority) {
         int taskStart = line.indexOf(", '") + 3;
         int taskEnd = line.lastIndexOf("'");
 
         String task = line.substring(taskStart, taskEnd);
 
-        return new ToDoItem(task);
+        return new ToDoItem(task, priority);
     }
 
     /**
@@ -136,7 +154,7 @@ public class Storage {
      * @param line the line representing the saved deadline item
      * @return the parsed {@code DeadlineItem}
      */
-    private static ListItem parseDeadlineItem(String line) {
+    private static ListItem parseDeadlineItem(String line, Priority priority) {
         int taskStart = line.indexOf(", '") + 3;
         int taskEnd = line.indexOf("', ", taskStart);
 
@@ -147,7 +165,7 @@ public class Storage {
         LocalDateTime byDate =
                 LocalDateTime.parse(line.substring(dateStart, dateEnd));
 
-        return new DeadlineItem(task, byDate);
+        return new DeadlineItem(task, byDate, priority);
     }
 
     /**
@@ -156,7 +174,7 @@ public class Storage {
      * @param line the line representing the saved event item
      * @return the parsed {@code EventItem}
      */
-    private static ListItem parseEventItem(String line) {
+    private static ListItem parseEventItem(String line, Priority priority) {
         int taskStart = line.indexOf(", '") + 3;
         int taskEnd = line.indexOf("', ", taskStart);
 
@@ -174,6 +192,6 @@ public class Storage {
         LocalDateTime toDate =
                 LocalDateTime.parse(line.substring(toDateStart, toDateEnd));
 
-        return new EventItem(task, fromDate, toDate);
+        return new EventItem(task, fromDate, toDate, priority);
     }
 }

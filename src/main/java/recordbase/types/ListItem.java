@@ -5,6 +5,7 @@ package recordbase.types;
  */
 public class ListItem {
     protected final String taskDesc;
+    protected final Priority priority;
     protected boolean isDone = false;
 
     /**
@@ -13,7 +14,27 @@ public class ListItem {
      * @param task the description of the task
      */
     public ListItem(String taskDesc) {
+        this(taskDesc, Priority.MEDIUM);
+    }
+
+    /**
+     * Creates a {@code ListItem} with the specified task description and priority.
+     *
+     * @param taskDesc the description of the task
+     * @param priority the priority of the task
+     */
+    public ListItem(String taskDesc, Priority priority) {
         this.taskDesc = taskDesc;
+        this.priority = priority;
+    }
+
+    /**
+     * Returns this task's priority.
+     *
+     * @return task priority
+     */
+    public Priority getPriority() {
+        return priority;
     }
 
     /**
@@ -47,6 +68,7 @@ public class ListItem {
         sb.append(this.isDone ? "X" : " "); // Ternary operator
         sb.append("] ");
         sb.append(this.taskDesc);
+        sb.append(String.format(" [Priority: %s (%d)]", priority, priority.getLevel()));
         return sb.toString();
     }
 }

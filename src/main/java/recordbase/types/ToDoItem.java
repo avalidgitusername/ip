@@ -10,7 +10,17 @@ public class ToDoItem extends ListItem {
      * @param task the description of the task
      */
     public ToDoItem(String taskDesc) {
-        super(taskDesc);
+        this(taskDesc, Priority.MEDIUM);
+    }
+
+    /**
+     * Constructs a {@code ToDoItem} with the specified description and priority.
+     *
+     * @param taskDesc the description of the task
+     * @param priority the priority of the task
+     */
+    public ToDoItem(String taskDesc, Priority priority) {
+        super(taskDesc, priority);
     }
 
     @Override
@@ -25,6 +35,7 @@ public class ToDoItem extends ListItem {
 
     @Override
     public String saveString() {
-        return String.format("T, %s, '%s'", this.isDone ? "1" : "0", this.taskDesc);
+        return String.format("T, %s, %d, '%s'", this.isDone ? "1" : "0",
+                priority.getLevel(), this.taskDesc);
     }
 }
