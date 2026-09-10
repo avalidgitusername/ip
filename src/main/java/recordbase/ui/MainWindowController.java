@@ -39,6 +39,11 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     public void initialize() {
+        assert scrollPane != null : "Scroll pane must be injected by FXML";
+        assert dialogContainer != null : "Dialog container must be injected by FXML";
+        assert userInput != null : "User input field must be injected by FXML";
+        assert sendButton != null : "Send button must be injected by FXML";
+
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
 
         // Open old list records.
@@ -56,7 +61,14 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void handleSendUserInput() {
+        assert userInput != null : "User input field must be injected by FXML";
+        assert dialogContainer != null : "Dialog container must be injected by FXML";
+
         String input = userInput.getText();
+
+        assert input != null : "User input text must not be null";
+
+        assert input != null : "User input text must not be null";
 
         if (input.isEmpty()) {
             return;
@@ -97,6 +109,8 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void handleButtonListItems() {
+        assert dialogContainer != null : "Dialog container must be injected by FXML";
+
         dialogContainer.getChildren().addAll(
             DialogBoxController.getRecordDialog(Record.parseInput("list"), recordProfileImage)
         );
@@ -108,6 +122,7 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void handleUpDownKeyPress(KeyEvent event) {
+        assert event != null : "Key event must not be null";
 
         switch (event.getCode()) {
             case KeyCode.UP -> {
@@ -125,6 +140,9 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void showPreviousUserInput() {
+        assert commandHistoryIndex >= 0 && commandHistoryIndex <= commandHistory.size()
+                : "Past message index must remain within valid bounds";
+
         if (commandHistoryIndex > 0) {
             commandHistoryIndex--;
             userInput.setText(commandHistory.get(commandHistoryIndex));
@@ -136,6 +154,9 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void showNextUserInput() {
+        assert commandHistoryIndex >= 0 && commandHistoryIndex <= commandHistory.size()
+                : "Past message index must remain within valid bounds";
+
         if (commandHistoryIndex < commandHistory.size() - 1) {
             commandHistoryIndex++;
             userInput.setText(commandHistory.get(commandHistoryIndex));

@@ -86,7 +86,9 @@ tasks.named('build') {
 }
 
 checkstyle {
-    toolVersion = '11.0.0'
+    // toolVersion = '11.0.0'
+    toolVersion = '13.11.0' // Update to support Java 25 syntax. Else, assertions will cause build failures
+    //toolVersion = '14.1.0' // Update to support Java 25 syntax. Else, assertions will cause build failures
 }
 
 run {

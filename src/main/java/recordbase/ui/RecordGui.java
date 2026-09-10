@@ -23,9 +23,14 @@ public class RecordGui extends Application {
      */
     @Override
     public void start(Stage stage) {
+        assert stage != null : "Primary stage must not be null";
+
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(RecordGui.class.getResource("/view/MainWindow.fxml"));
             AnchorPane ap = fxmlLoader.load();
+
+            assert ap != null : "Main window layout must be loaded";
+
             Scene scene = new Scene(ap);
             stage.setScene(scene);
             stage.show();

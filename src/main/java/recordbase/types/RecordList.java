@@ -39,6 +39,8 @@ public class RecordList {
      * @return the index of the newly created item
      */
     public int addItem(ListItem item) {
+        assert item != null : "List item must not be null";
+
         this.listItems.add(item);
         return this.listItems.size() - 1;
     }
@@ -156,6 +158,8 @@ public class RecordList {
      * @return An ArrayList of all matching ListItems
      */
     public ArrayList<ListItem> searchItems(String searchStr) {
+        assert searchStr != null : "Search term must not be null";
+
         ArrayList<ListItem> matches = new ArrayList<>();
         String searchTermLowercase = searchStr.toLowerCase();
 

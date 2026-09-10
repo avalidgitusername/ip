@@ -47,6 +47,8 @@ public class ListParser {
         DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.STRICT);
 
     private static LocalDateTime parseDateTime(String dateText, String timeText) {
+        assert dateText != null : "Date text must not be null";
+
         LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
 
         if (timeText == null) {
@@ -67,11 +69,17 @@ public class ListParser {
      * @throws RecordException if the command is not properly formatted
      */
     public static int parseToDo(String command, RecordList list) {
+        assert command != null : "Command must not be null";
+        assert list != null : "List must not be null";
+
         Matcher matcher = TODO_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
+
+        assert matcher.group("task") != null : "Task must not be null";
+
         String task = matcher.group("task");
 
         return list.addToDoItem(task);
@@ -86,11 +94,17 @@ public class ListParser {
      * @throws RecordException if the command is not properly formatted
      */
     public static int parseDeadline(String command, RecordList list) {
+        assert command != null : "Command must not be null";
+        assert list != null : "List must not be null";
+
         Matcher matcher = DEADLINE_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
+
+        assert matcher.group("task") != null : "Task must not be null";
+
         String task = matcher.group("task");
         LocalDateTime deadline = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
 
@@ -106,15 +120,23 @@ public class ListParser {
      * @throws RecordException if the command is not properly formatted
      */
     public static int parseEvent(String command, RecordList list) {
+        assert command != null : "Command must not be null";
+        assert list != null : "List must not be null";
+
         Matcher matcher = EVENT_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
+
+        assert matcher.group("task") != null : "Task must not be null";
+
         String task = matcher.group("task");
 
         LocalDateTime startDateTime = parseDateTime(matcher.group("fromDate"), matcher.group("fromTime"));
         LocalDateTime endDateTime = parseDateTime(matcher.group("toDate"), matcher.group("toTime"));
+
+        assert !endDateTime.isBefore(startDateTime) : "Event end must not be before its start";
 
         return list.addEventItem(task, startDateTime, endDateTime);
     }

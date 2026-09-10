@@ -36,6 +36,9 @@ public class Storage {
      * @throws RecordException if the file cannot be created or written to
      */
     public static void saveToFile(RecordList list, String fileName) {
+        assert list != null : "List must not be null";
+        assert fileName != null : "File name must not be null";
+
         Path path = Paths.get(fileName);
         Path parentDirectory = path.getParent();
 
@@ -46,6 +49,8 @@ public class Storage {
 
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
                 for (ListItem item : list.getItems()) {
+                    assert item != null : "List must not contain null items";
+
                     writer.write(item.saveString().replaceAll("\'", "\\\'"));
                     writer.newLine();
                 }
@@ -64,6 +69,9 @@ public class Storage {
      * @throws RecordException if the file does not exist or cannot be read
      */
     public static void loadFromFile(RecordList list, String fileName) {
+        assert list != null : "List must not be null";
+        assert fileName != null : "File name must not be null";
+
         Path path = Paths.get(fileName);
 
         if (Files.notExists(path)) {
@@ -75,6 +83,8 @@ public class Storage {
 
             while ((line = reader.readLine()) != null) {
                 if (!line.isBlank()) {
+                    assert line != null : "Saved line must not be null";
+
                     ListItem item = parseItem(line);
                     list.addItem(item);
                 }
