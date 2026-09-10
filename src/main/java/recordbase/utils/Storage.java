@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 import recordbase.exceptions.RecordException;
 import recordbase.types.DeadlineItem;
 import recordbase.types.EventItem;
-import recordbase.types.List;
 import recordbase.types.ListItem;
+import recordbase.types.RecordList;
 import recordbase.types.ToDoItem;
 
 /**
@@ -21,6 +21,13 @@ import recordbase.types.ToDoItem;
  * <p>The class handles conversion between list items and their file-based representation.</p>
  */
 public class Storage {
+    private static final int ITEM_TYPE_INDEX = 0;
+    private static final int COMPLETION_STATUS_INDEX = 3;
+    private static final char COMPLETED_STATUS = '1';
+    private static final String QUOTED_FIELD_PREFIX = ", '";
+    private static final String QUOTED_FIELD_SEPARATOR = "', ";
+    private static final String CLOSING_QUOTE = "'";
+
     /**
      * Saves all items in the specified list to a file.
      *
@@ -28,16 +35,13 @@ public class Storage {
      * @param fileName the name of the file to save the list to
      * @throws RecordException if the file cannot be created or written to
      */
-    public static void saveToFile(List list, String fileName) {
+    public static void saveToFile(RecordList list, String fileName) {
         Path path = Paths.get(fileName);
+        Path parentDirectory = path.getParent();
 
         try {
-            if (Files.notExists(path.getParent())) {
-                try {
-                    Files.createDirectories(path.getParent());
-                } catch (IOException e) {
-                    System.out.println("Unable to do something with creating directories");
-                }
+            if (parentDirectory != null) {
+                Files.createDirectories(parentDirectory);
             }
 
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
@@ -59,7 +63,7 @@ public class Storage {
      * @param fileName the name of the file to load from
      * @throws RecordException if the file does not exist or cannot be read
      */
-    public static void loadFromFile(List list, String fileName) {
+    public static void loadFromFile(RecordList list, String fileName) {
         Path path = Paths.get(fileName);
 
         if (Files.notExists(path)) {
@@ -78,6 +82,7 @@ public class Storage {
         } catch (IOException | RuntimeException e) {
             throw new RecordException("Unable to load list from file.", e);
         }
+
     }
 
     /**
@@ -88,8 +93,8 @@ public class Storage {
      * @throws RecordException if the line contains an unknown item type
      */
     private static ListItem parseItem(String line) {
-        char itemType = line.charAt(0);
-        boolean isDone = line.charAt(3) == '1';
+        char itemType = line.charAt(ITEM_TYPE_INDEX);
+        boolean isDone = line.charAt(COMPLETION_STATUS_INDEX) == COMPLETED_STATUS;
 
         ListItem item;
 
@@ -122,12 +127,8 @@ public class Storage {
      * @return the parsed {@code ToDoItem}
      */
     private static ListItem parseToDoItem(String line) {
-        int taskStart = line.indexOf(", '") + 3;
-        int taskEnd = line.lastIndexOf("'");
-
-        String task = line.substring(taskStart, taskEnd);
-
-        return new ToDoItem(task);
+        String[] fields = extractQuotedFields(line, 1);
+        return new ToDoItem(fields[0]);
     }
 
     /**
@@ -137,17 +138,10 @@ public class Storage {
      * @return the parsed {@code DeadlineItem}
      */
     private static ListItem parseDeadlineItem(String line) {
-        int taskStart = line.indexOf(", '") + 3;
-        int taskEnd = line.indexOf("', ", taskStart);
-
-        int dateStart = line.indexOf(", '", taskEnd) + 3;
-        int dateEnd = line.lastIndexOf("'");
-
-        String task = line.substring(taskStart, taskEnd);
-        LocalDateTime byDate =
-                LocalDateTime.parse(line.substring(dateStart, dateEnd));
-
-        return new DeadlineItem(task, byDate);
+        String[] fields = extractQuotedFields(line, 2);
+        String task = fields[0];
+        LocalDateTime deadline = LocalDateTime.parse(fields[1]);
+        return new DeadlineItem(task, deadline);
     }
 
     /**
@@ -157,23 +151,36 @@ public class Storage {
      * @return the parsed {@code EventItem}
      */
     private static ListItem parseEventItem(String line) {
-        int taskStart = line.indexOf(", '") + 3;
-        int taskEnd = line.indexOf("', ", taskStart);
+        String[] fields = extractQuotedFields(line, 3);
+        String task = fields[0];
+        LocalDateTime startDateTime = LocalDateTime.parse(fields[1]);
+        LocalDateTime endDateTime = LocalDateTime.parse(fields[2]);
+        return new EventItem(task, startDateTime, endDateTime);
+    }
 
-        int fromDateStart = line.indexOf(", '", taskEnd) + 3;
-        int fromDateEnd = line.indexOf("', ", fromDateStart);
+    /**
+     * Extracts the quoted fields from a saved item in their stored order.
+     *
+     * @param line the saved item line
+     * @param fieldCount the number of quoted fields expected in the line
+     * @return the extracted field values
+     */
+    private static String[] extractQuotedFields(String line, int fieldCount) {
+        String[] fields = new String[fieldCount];
+        int searchStart = 0;
 
-        int toDateStart = line.indexOf(", '", fromDateEnd) + 3;
-        int toDateEnd = line.lastIndexOf("'");
+        for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++) {
+            int fieldStart = line.indexOf(QUOTED_FIELD_PREFIX, searchStart)
+                    + QUOTED_FIELD_PREFIX.length();
+            boolean isLastField = fieldIndex == fieldCount - 1;
+            int fieldEnd = isLastField
+                    ? line.lastIndexOf(CLOSING_QUOTE)
+                    : line.indexOf(QUOTED_FIELD_SEPARATOR, fieldStart);
 
-        String task = line.substring(taskStart, taskEnd);
+            fields[fieldIndex] = line.substring(fieldStart, fieldEnd);
+            searchStart = fieldEnd;
+        }
 
-        LocalDateTime fromDate =
-                LocalDateTime.parse(line.substring(fromDateStart, fromDateEnd));
-
-        LocalDateTime toDate =
-                LocalDateTime.parse(line.substring(toDateStart, toDateEnd));
-
-        return new EventItem(task, fromDate, toDate);
+        return fields;
     }
 }

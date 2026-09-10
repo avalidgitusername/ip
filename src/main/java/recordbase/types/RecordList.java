@@ -2,6 +2,7 @@ package recordbase.types;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 import recordbase.exceptions.RecordException;
 
@@ -11,14 +12,13 @@ import recordbase.exceptions.RecordException;
  * <p>The list supports adding, removing, retrieving, and updating the completion status of items.</p>
  */
 
-public class List {
-    private int listItemCounter = 0;
-    private ArrayList<ListItem> listItems;
+public class RecordList {
+    private final ArrayList<ListItem> listItems;
 
     /**
-     * Creates an empty {@code List}.
+     * Creates an empty {@code RecordList}.
      */
-    public List() {
+    public RecordList() {
         this.listItems = new ArrayList<>();
     }
 
@@ -40,9 +40,7 @@ public class List {
      */
     public int addItem(ListItem item) {
         this.listItems.add(item);
-        this.listItemCounter++;
-
-        return this.listItemCounter - 1;
+        return this.listItems.size() - 1;
     }
 
     /**
@@ -54,13 +52,9 @@ public class List {
      */
     public String deleteItem(int index) {
         if (index >= 0 && index < this.listItems.size()) {
-            // Temporary string to return initial value before deletion.
-            String tmpStr = this.listItems.get(index).toString();
+            String deletedItemDescription = this.listItems.get(index).toString();
             this.listItems.remove(index);
-
-            this.listItemCounter--;
-
-            return tmpStr;
+            return deletedItemDescription;
         } else {
             throw new RecordException("ListError: No such index to delete.");
         }
@@ -76,9 +70,7 @@ public class List {
      */
     public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate) {
         this.listItems.add(new EventItem(task, fromDate, toDate));
-        this.listItemCounter++;
-
-        return this.listItemCounter - 1;
+        return this.listItems.size() - 1;
     }
     /**
      * Adds an {@code DeadlineItem} with the specified task description and deadline to end of the list.
@@ -89,9 +81,7 @@ public class List {
      */
     public int addDeadlineItem(String task, LocalDateTime byDate) {
         this.listItems.add(new DeadlineItem(task, byDate));
-        this.listItemCounter++;
-
-        return this.listItemCounter - 1;
+        return this.listItems.size() - 1;
     }
     /**
      * Adds an {@code ToDoItem} with the specified task description to end of the list.
@@ -101,9 +91,7 @@ public class List {
      */
     public int addToDoItem(String task) {
         this.listItems.add(new ToDoItem(task));
-        this.listItemCounter++;
-
-        return this.listItemCounter - 1;
+        return this.listItems.size() - 1;
     }
 
     /**
@@ -114,21 +102,7 @@ public class List {
      * @throws RecordException if the specified index is out of bounds
      */
     public String setListItemDone(int index) {
-        if (index < 0 || index >= this.listItemCounter) {
-            throw new RecordException("Error in mark: No such item on list.");
-        } else {
-            this.listItems.get(index).setDone();
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("Nice...You've marked the item done.\n");
-            sb.append(this.listItems.get(index));
-            sb.append("\n");
-
-            // System.out.println("Nice...You've marked the item done.");
-            // System.out.println(this.listItems.get(index));
-
-            return sb.toString();
-        }
+        return updateCompletionStatus(index, true);
     }
 
     /**
@@ -139,30 +113,41 @@ public class List {
      * @throws RecordException if the specified index is out of bounds
      */
     public String setListItemNotDone(int index) {
-        if (index < 0 || index >= this.listItemCounter) {
-            throw new RecordException("Error in unmark: No such item on list.");
-        } else {
-            this.listItems.get(index).setNotDone();
+        return updateCompletionStatus(index, false);
+    }
 
-            // System.out.println("Alright. Item marked as not done.");
-            // System.out.println(this.listItems.get(index));
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("Nice...You've marked the item done.\n");
-            sb.append(this.listItems.get(index));
-            sb.append("\n");
-
-            return sb.toString();
+    /**
+     * Updates the completion status of an item and returns a confirmation message.
+     *
+     * @param index the index of the item to update
+     * @param shouldMarkAsDone whether the item should be marked as completed
+     * @return the confirmation containing the updated item
+     * @throws RecordException if the specified index is out of bounds
+     */
+    private String updateCompletionStatus(int index, boolean shouldMarkAsDone) {
+        if (index < 0 || index >= this.listItems.size()) {
+            String action = shouldMarkAsDone ? "mark" : "unmark";
+            throw new RecordException(String.format("Error in %s: No such item on list.", action));
         }
+
+        ListItem item = this.listItems.get(index);
+        if (shouldMarkAsDone) {
+            item.setDone();
+        } else {
+            item.setNotDone();
+        }
+
+        String completionStatus = shouldMarkAsDone ? "done" : "not done";
+        return String.format("Nice...You've marked the item %s.%n%s%n", completionStatus, item);
     }
 
     /**
      * Returns all items in the current list.
      *
-     * @return the {@code ArrayList} containing all items in the list
+     * @return an unmodifiable list containing all items in insertion order
      */
-    public ArrayList<ListItem> getItems() {
-        return this.listItems;
+    public List<ListItem> getItems() {
+        return List.copyOf(this.listItems);
     }
 
     /**
@@ -176,7 +161,7 @@ public class List {
 
         if (this.listItems != null) {
             for (ListItem item : this.listItems) {
-                if (((ListItem) item).toString().toLowerCase().contains(searchTermLowercase)) {
+                if (item.toString().toLowerCase().contains(searchTermLowercase)) {
                     matches.add(item);
                 }
             }

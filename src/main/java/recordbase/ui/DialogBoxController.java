@@ -29,28 +29,7 @@ public class DialogBoxController extends HBox {
      * @param text the string for the image
      * @param image the image object itself to display
      */
-    public DialogBoxController(String text, Image image) {
-        // -----Part 2-----
-        // text = new Label(s);
-        // displayPicture = new ImageView(i);
-        // this.getChildren().addAll(text, displayPicture);
-        // text = new Label(s);
-        // displayPicture = new ImageView(i);
-        // -----End Part 2-----
-
-        // -----Part 2b-----
-        //Styling the dialog box
-        // text = new Label(s);
-        // displayPicture = new ImageView(i);
-        // text.setWrapText(true);
-        // displayPicture.setFitWidth(100.0);
-        // displayPicture.setFitHeight(100.0);
-        // this.setAlignment(Pos.TOP_RIGHT);
-
-        // this.getChildren().addAll(text, displayPicture);
-        // ------End Part 2b-----
-
-        // -----Part 4-----
+    public DialogBoxController(String text, Image img) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(RecordGui.class.getResource("/view/DialogBox.fxml"));
             fxmlLoader.setController(this);
@@ -61,9 +40,7 @@ public class DialogBoxController extends HBox {
         }
 
         dialog.setText(text);
-        displayPicture.setImage(image);
-        // -----End Part 4-----
-
+        displayPicture.setImage(img);
     }
 
     /**
@@ -71,18 +48,18 @@ public class DialogBoxController extends HBox {
      */
     private void flip() {
         this.setAlignment(Pos.TOP_LEFT);
-        ObservableList<Node> tmp = FXCollections.observableArrayList(this.getChildren());
-        FXCollections.reverse(tmp);
-        this.getChildren().setAll(tmp);
+        ObservableList<Node> childNodes = FXCollections.observableArrayList(this.getChildren());
+        FXCollections.reverse(childNodes);
+        this.getChildren().setAll(childNodes);
     }
 
-    public static DialogBoxController getUserDialog(String s, Image i) {
-        return new DialogBoxController(s, i);
+    public static DialogBoxController getUserDialog(String text, Image img) {
+        return new DialogBoxController(text, img);
     }
 
-    public static DialogBoxController getRecordDialog(String s, Image i) {
-        var db = new DialogBoxController(s, i);
-        db.flip();
-        return db;
+    public static DialogBoxController getRecordDialog(String text, Image img) {
+        var dialogBox = new DialogBoxController(text, img);
+        dialogBox.flip();
+        return dialogBox;
     }
 }

@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
  * <p>A {@code EventItem} stores the task description together with its start and end date and time.</p>
  */
 public class EventItem extends ListItem {
-    private LocalDateTime fromDate;
-    private LocalDateTime toDate;
+    private final LocalDateTime fromDate;
+    private final LocalDateTime toDate;
 
     /**
      * Constructs a {@code EventItem} with the specified task description, start date and time, end date and time.
@@ -32,14 +32,14 @@ public class EventItem extends ListItem {
 
         sb.append(super.toString());
 
-        String s1 = String.format(" (From: %s To: %s)", this.fromDate, this.toDate);
-        sb.append(s1);
+        String durationDescription = String.format(" (From: %s To: %s)", this.fromDate, this.toDate);
+        sb.append(durationDescription);
         return sb.toString();
     }
 
     @Override
     public String saveString() {
         return String.format("E, %s, '%s', '%s', '%s'", this.isDone ? "1" : "0",
-            this.taskDesc, this.fromDate, this.toDate);
+                taskDesc, fromDate, toDate);
     }
 }

@@ -9,13 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import recordbase.exceptions.RecordException;
-import recordbase.types.List;
+import recordbase.types.RecordList;
 
 /**
  * Provides methods for parsing user commands into {@code ListItem} objects.
  *
  * <p>The parser validates commands formats and extracts task details, dates, and times before adding
- * the corresponding items into a {@code List}.</p>
+ * the corresponding items into a {@code RecordList}.</p>
  */
 public class ListParser {
     // Patterns generated using AI.
@@ -41,12 +41,10 @@ public class ListParser {
     );
 
     private static final DateTimeFormatter DATE_FORMATTER =
-        DateTimeFormatter.ofPattern("uuuuMMdd")
-                .withResolverStyle(ResolverStyle.STRICT);
+        DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
 
     private static final DateTimeFormatter TIME_FORMATTER =
-        DateTimeFormatter.ofPattern("HH:mm")
-                .withResolverStyle(ResolverStyle.STRICT);
+        DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.STRICT);
 
     private static LocalDateTime parseDateTime(String dateText, String timeText) {
         LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
@@ -68,8 +66,7 @@ public class ListParser {
      * @return the index of the newly created item
      * @throws RecordException if the command is not properly formatted
      */
-    public static int createListToDoFromLocalDT(String command, List list) {
-        System.out.print(String.format("Parsing: %s", command));
+    public static int parseToDo(String command, RecordList list) {
         Matcher matcher = TODO_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
@@ -88,17 +85,16 @@ public class ListParser {
      * @return the index of the newly created item
      * @throws RecordException if the command is not properly formatted
      */
-    public static int createListDeadlineFromLocalDT(String command, List list) {
+    public static int parseDeadline(String command, RecordList list) {
         Matcher matcher = DEADLINE_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
-            // System.out.println("Invalid Deadline command.");
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
         String task = matcher.group("task");
-        LocalDateTime byDT = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
+        LocalDateTime deadline = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
 
-        return list.addDeadlineItem(task, byDT);
+        return list.addDeadlineItem(task, deadline);
     }
 
     /**
@@ -109,7 +105,7 @@ public class ListParser {
      * @return the index of the newly created item
      * @throws RecordException if the command is not properly formatted
      */
-    public static int createListEventFromLocalDT(String command, List list) {
+    public static int parseEvent(String command, RecordList list) {
         Matcher matcher = EVENT_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
@@ -117,9 +113,9 @@ public class ListParser {
         }
         String task = matcher.group("task");
 
-        LocalDateTime fromDT = parseDateTime(matcher.group("fromDate"), matcher.group("fromTime"));
-        LocalDateTime toDT = parseDateTime(matcher.group("toDate"), matcher.group("toTime"));
+        LocalDateTime startDateTime = parseDateTime(matcher.group("fromDate"), matcher.group("fromTime"));
+        LocalDateTime endDateTime = parseDateTime(matcher.group("toDate"), matcher.group("toTime"));
 
-        return list.addEventItem(task, fromDT, toDT);
+        return list.addEventItem(task, startDateTime, endDateTime);
     }
 }

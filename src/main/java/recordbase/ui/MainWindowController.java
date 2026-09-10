@@ -28,12 +28,11 @@ public class MainWindowController extends AnchorPane {
     @FXML
     private Button sendButton;
 
-    private Record record;
-    private ArrayList<String> pastMessages = new ArrayList();
-    private int pastMessagesIndex = pastMessages.size();
+    private final ArrayList<String> commandHistory = new ArrayList<>();
+    private int commandHistoryIndex = commandHistory.size();
 
-    private Image userImage = new Image(this.getClass().getResourceAsStream("/images/SmallLogo.png"));
-    private Image recordProfileImage = new Image(this.getClass().getResourceAsStream("/images/SmallLogo.png"));
+    private final Image userImage = new Image(this.getClass().getResourceAsStream("/images/SmallLogo.png"));
+    private final Image recordProfileImage = new Image(this.getClass().getResourceAsStream("/images/SmallLogo.png"));
 
     /**
      * Initializes the controller for the main ui of Record Application.
@@ -51,12 +50,6 @@ public class MainWindowController extends AnchorPane {
 
     }
 
-    /** Injects the Record instance */
-    @FXML
-    public void setRecord(Record r) {
-        record = r;
-    }
-
     /**
      * Creates two dialog boxes, one echoing user input and the other containing Record's reply and then appends them to
      * the dialog container. Clears the user input after processing.
@@ -65,24 +58,18 @@ public class MainWindowController extends AnchorPane {
     private void handleSendUserInput() {
         String input = userInput.getText();
 
-        if (input.length() == 0) {
-            // Do nothing
+        if (input.isEmpty()) {
             return;
         }
 
         String response;
 
         try {
-            // Add current input into the list of past inputs if not immediately repeating
-            if (pastMessages.size() > 0
-                    && input.equalsIgnoreCase(pastMessages.get(pastMessages.size() - 1)) == false) {
-                System.out.println("Adding new item2");
-                pastMessages.add(input);
-            } else if (pastMessages.size() == 0) {
-                System.out.println("Adding new item1");
-                pastMessages.add(input);
+            if (commandHistory.isEmpty()
+                    || !input.equalsIgnoreCase(commandHistory.get(commandHistory.size() - 1))) {
+                commandHistory.add(input);
             }
-            pastMessagesIndex = pastMessages.size();
+            commandHistoryIndex = commandHistory.size();
 
             response = Record.parseInput(input);
         } catch (RecordException e) {
@@ -95,6 +82,7 @@ public class MainWindowController extends AnchorPane {
             );
             Record.saveList("data/listdata.txt");
             Platform.exit();
+            return;
         }
 
         dialogContainer.getChildren().addAll(
@@ -121,7 +109,6 @@ public class MainWindowController extends AnchorPane {
     @FXML
     private void handleUpDownKeyPress(KeyEvent event) {
 
-        // System.out.println("Handling action");
         switch (event.getCode()) {
             case KeyCode.UP -> {
                 showPreviousUserInput();
@@ -129,12 +116,7 @@ public class MainWindowController extends AnchorPane {
             case KeyCode.DOWN -> {
                 showNextUserInput();
             }
-            case KeyCode.ENTER -> {
-                // Do nothing
-            }
-            default -> {
-                // Do nothing
-            }
+            default -> { }
         }
     }
 
@@ -143,9 +125,9 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void showPreviousUserInput() {
-        if (pastMessagesIndex > 0) {
-            pastMessagesIndex--;
-            userInput.setText(pastMessages.get(pastMessagesIndex));
+        if (commandHistoryIndex > 0) {
+            commandHistoryIndex--;
+            userInput.setText(commandHistory.get(commandHistoryIndex));
         }
     }
 
@@ -154,11 +136,11 @@ public class MainWindowController extends AnchorPane {
      */
     @FXML
     private void showNextUserInput() {
-        if (pastMessagesIndex < pastMessages.size() - 1) {
-            pastMessagesIndex++;
-            userInput.setText(pastMessages.get(pastMessagesIndex));
-        } else if (pastMessagesIndex == pastMessages.size() - 1) {
-            pastMessagesIndex++;
+        if (commandHistoryIndex < commandHistory.size() - 1) {
+            commandHistoryIndex++;
+            userInput.setText(commandHistory.get(commandHistoryIndex));
+        } else if (commandHistoryIndex == commandHistory.size() - 1) {
+            commandHistoryIndex++;
             userInput.clear();
         }
     }
