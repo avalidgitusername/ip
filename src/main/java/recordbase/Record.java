@@ -3,7 +3,9 @@ package recordbase;
 import java.util.Scanner;
 
 import recordbase.exceptions.RecordException;
-import recordbase.types.List;
+import recordbase.types.ParsedCommand;
+import recordbase.types.RecordList;
+import recordbase.utils.CommandParser;
 import recordbase.utils.ListParser;
 import recordbase.utils.Storage;
 
@@ -14,13 +16,13 @@ import recordbase.utils.Storage;
  * and loading and saving the task list.</p>
  */
 public class Record {
-    private static List list;
+    private static RecordList list;
 
     /**
      * Displays the greeting banner and introductory message for the Record service.
      */
     public static String greet() {
-        String dashBreak = "----------------------------------------\n";
+        String separator = "----------------------------------------\n";
         // Note banners have newline characters separated for ease of modification in escaped characters.
         String banner = "______                       _ " + "\n"
                         + "| ___ \\                     | |" + "\n"
@@ -31,41 +33,41 @@ public class Record {
         System.out.println(banner);
         System.out.println(""); // Empty line for banner spacing
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Hello. You've connected to the Record service. How may I help.\n");
-        sb.append(dashBreak);
+        StringBuilder response = new StringBuilder();
+        response.append("Hello. You've connected to the Record service. How may I help.\n");
+        response.append(separator);
 
-        System.out.println(sb);
+        System.out.println(response);
 
-        return sb.toString();
+        return response.toString();
     }
 
     /**
      * Displays the goodbye message when exiting the Record service.
      */
     public static String goodbye() {
-        String dashBreak = "----------------------------------------\n";
+        String separator = "----------------------------------------\n";
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("We hope you've fully Record-ed down everything needed! Goodbye!\n");
-        sb.append(dashBreak);
+        StringBuilder response = new StringBuilder();
+        response.append("We hope you've fully Record-ed down everything needed! Goodbye!\n");
+        response.append(separator);
 
-        System.out.println(sb);
+        System.out.println(response);
 
-        return sb.toString();
+        return response.toString();
     }
 
     /**
      * Prints and returns a message acknowledging the specifiec string has been recorded.
      *
-     * @param str the string to display in the confirmation message
+     * @param notedItem the item description to display in the confirmation message
      * @return the acknowledgement message
      */
-    public static String echoNoted(String str) {
-        String tempStr = String.format("> Noted. I've recorded down: %s", str);
-        System.out.println(tempStr);
+    public static String echoNoted(String notedItem) {
+        String response = String.format("> Noted. I've recorded down: %s", notedItem);
+        System.out.println(response);
 
-        return tempStr;
+        return response;
     }
 
     /**
@@ -77,175 +79,153 @@ public class Record {
     }
 
     /**
-     * Parses the input as ...... TODO
-     * @param input
-     * @return
+     * Processes a user command and returns the corresponding application response.
+     *
+     * @param input the raw user command
+     * @return the response, or {@code null} when the application should exit
+     * @throws RecordException if the command or its arguments are invalid
      */
     public static String parseInput(String input) {
-        boolean isListItemOptionParsed = false;
+        ParsedCommand command = CommandParser.parse(input);
+        return switch (command.type()) {
+            case BYE -> parseByeCommand(command);
+            case LIST -> parseListCommand(command);
+            case MARK -> markItem(command.arguments());
+            case UNMARK -> unmarkItem(command.arguments());
+            case DELETE -> deleteItem(command.arguments());
+            case TODO -> createToDo(command.arguments());
+            case DEADLINE -> createDeadline(command.arguments());
+            case EVENT -> createEvent(command.arguments());
+            case UNKNOWN -> "Sorry! No such command available. Please try again yeah.";
+        };
 
-        String inputLowercase = input.toLowerCase();
-        System.out.println(String.format("Processing: %s", input));
+    }
 
-        switch (inputLowercase) {
-            case "" -> {
-                // Do nothing. Assume user enter wrong.
-                isListItemOptionParsed = true;
-            }
-            case "bye" -> {
-                //shouldContinue = false;
-                isListItemOptionParsed = true;
-                return null;
-            }
-            case "list" -> {
-                if (list != null) {
-                    // System.out.println(list.toString());
-                    return list.toString();
-                } else {
-                    throw new RecordException("No items in list!");
-                    // System.out.println("No items in list!");
-                }
-                // isListItemOptionParsed = true;
-                // return "No items in list!";
-            }
-            default -> {
-                // Assume wrong input. Restart to asking.
-                isListItemOptionParsed = false;
-            }
+    /**
+     * Processes a bye command.
+     *
+     * @param command the parsed bye command
+     * @return {@code null} to signal that the application should exit
+     * @throws RecordException if arguments were supplied
+     */
+    private static String parseByeCommand(ParsedCommand command) {
+        requireNoArguments(command);
+        return null;
+    }
+
+    /**
+     * Processes a list command.
+     *
+     * @param command the parsed list command
+     * @return the current list contents
+     * @throws RecordException if arguments were supplied
+     */
+    private static String parseListCommand(ParsedCommand command) {
+        requireNoArguments(command);
+        return list == null ? "No items in list!" : list.toString();
+    }
+
+    /**
+     * Rejects unexpected arguments for commands that do not accept them.
+     *
+     * @param command the command to validate
+     * @throws RecordException if arguments were supplied
+     */
+    private static void requireNoArguments(ParsedCommand command) {
+        if (command.hasArguments()) {
+            throw new RecordException("This command does not accept arguments.");
         }
+    }
 
-        // Handle marking of items in List.
-        if (inputLowercase.startsWith("mark ")) {
-            try {
-                int index = Integer.parseInt(input.substring(5)) - 1;
+    /**
+     * Marks the numbered item as completed.
+     *
+     * @param arguments the one-based item number
+     * @return a confirmation containing the updated item
+     */
+    private static String markItem(String arguments) {
+        return getOrCreateList().setListItemDone(parseItemIndex(arguments));
+    }
 
-                if (list != null) {
-                    return list.setListItemDone(index);
-                }
+    /**
+     * Marks the numbered item as not completed.
+     *
+     * @param arguments the one-based item number
+     * @return a confirmation containing the updated item
+     */
+    private static String unmarkItem(String arguments) {
+        return getOrCreateList().setListItemNotDone(parseItemIndex(arguments));
+    }
 
-                // isListItemOptionParsed = true;
-                // return "";
-            } catch (NumberFormatException e) {
-                // Ignore as nothing.
-            }
+    /**
+     * Deletes the numbered item.
+     *
+     * @param arguments the one-based item number
+     * @return a confirmation containing the deleted item
+     */
+    private static String deleteItem(String arguments) {
+        String deletedItem = getOrCreateList().deleteItem(parseItemIndex(arguments));
+        return String.format("Success! Deleted: %s", deletedItem);
+    }
+
+    /**
+     * Converts a one-based item number supplied by the user into a zero-based index.
+     *
+     * @param arguments the user-supplied item number
+     * @return the zero-based item index
+     * @throws RecordException if the argument is not a single positive integer
+     */
+    private static int parseItemIndex(String arguments) {
+        try {
+            return Integer.parseInt(arguments) - 1;
+        } catch (NumberFormatException exception) {
+            throw new RecordException("Please provide a valid item number.", exception);
         }
+    }
 
-        if (inputLowercase.startsWith("unmark ")) {
-            try {
-                int index = Integer.parseInt(input.substring(7)) - 1;
+    /**
+     * Creates a to-do item from command arguments.
+     *
+     * @param arguments the task description
+     * @return the creation acknowledgement
+     */
+    private static String createToDo(String arguments) {
+        int index = ListParser.parseToDo("todo " + arguments, getOrCreateList());
+        return echoNoted(list.getItem(index).toString());
+    }
 
-                // Handle error
-                if (list != null) {
-                    return list.setListItemNotDone(index);
-                }
+    /**
+     * Creates a deadline item from command arguments.
+     *
+     * @param arguments the task description and deadline
+     * @return the creation acknowledgement
+     */
+    private static String createDeadline(String arguments) {
+        int index = ListParser.parseDeadline("deadline " + arguments, getOrCreateList());
+        return echoNoted(list.getItem(index).toString());
+    }
 
-                // isListItemOptionParsed = true;
-            } catch (NumberFormatException e) {
-                // Ignore as nothing.
-            }
+    /**
+     * Creates an event item from command arguments.
+     *
+     * @param arguments the task description and duration
+     * @return the creation acknowledgement
+     */
+    private static String createEvent(String arguments) {
+        int index = ListParser.parseEvent("event " + arguments, getOrCreateList());
+        return echoNoted(list.getItem(index).toString());
+    }
+
+    /**
+     * Returns the current list, creating an empty list when necessary.
+     *
+     * @return the current list
+     */
+    private static RecordList getOrCreateList() {
+        if (list == null) {
+            list = new RecordList();
         }
-
-        if (inputLowercase.startsWith("delete ")) {
-            try {
-                int index = Integer.parseInt(input.substring(7)) - 1;
-
-                // Handle error
-                if (list != null) {
-                    String s1 = list.deleteItem(index);
-                    // System.out.println(String.format("Success! Deleted: %s", s1));
-                    return String.format("Success! Deleted: %s", s1);
-                } else {
-                    System.err.println("Error in Delete: No such item.");
-                    throw new RecordException("Error in Delete: No such item.");
-                }
-
-                // isListItemOptionParsed = true;
-                // return "Error in Delete: No such item.";
-            } catch (NumberFormatException e) {
-                // Ignore as nothing.
-            }
-        }
-        // Create a new List object for this input
-        if (isListItemOptionParsed == false) {
-            if (Record.list == null) {
-                Record.list = new List();
-            }
-            if (inputLowercase.startsWith("todo ")) {
-                String task = input.substring(5).strip();
-
-                if (task.length() == 0) {
-                    throw new RecordException("ListItem description of item is not given.");
-                }
-
-                int listIndex = ListParser.createListToDoFromLocalDT(input, list);
-                if (listIndex != -1) {
-                    return echoNoted(list.getItem(listIndex).toString());
-                }
-            } else if (inputLowercase.startsWith("deadline ")) {
-                int startSearchIndex = input.toLowerCase().indexOf("/by ");
-                // Error handling
-                // >1 "by" date
-                if (startSearchIndex != inputLowercase.lastIndexOf("/by")) {
-                    // System.err.println("Error in Deadline: More than 1 'by' date specified.");
-                    throw new RecordException("Error in Deadline: More than 1 'by' date specified.");
-                }
-
-                if (startSearchIndex == -1) {
-                    throw new RecordException("Error in Deadline: 'By' date not specified.");
-                }
-
-                String task = input.substring(8, startSearchIndex).strip();
-                if (task.length() == 0) {
-                    throw new RecordException("ListItem description of item is not given.");
-                }
-
-                // String byDate = user_input.substring(startSearchIndex + 3).strip();
-
-                int listIndex = ListParser.createListDeadlineFromLocalDT(input, list);
-                if (listIndex != -1) {
-                    return echoNoted(list.getItem(listIndex).toString());
-                }
-            } else if (inputLowercase.startsWith("event ")) {
-                int startSearchFromDateIndex = input.toLowerCase().indexOf("/from ");
-                // Error handling
-                // >1 "from" date
-                if (startSearchFromDateIndex != inputLowercase.lastIndexOf("/from")) {
-                    // System.err.println("Error in Event: More than 1 'from' date specified.");
-                    throw new RecordException("Error in Event: More than 1 'from' date specified.");
-                }
-                int startSearchToDateIndex = inputLowercase.indexOf("/to ");
-                // >1 "to" date
-                if (startSearchToDateIndex != inputLowercase.lastIndexOf("/to")) {
-                    // System.err.println("Error in Event: More than 1 'to' date specified.");
-                    throw new RecordException("Error in Event: More than 1 'to' date specified.");
-                }
-
-                if (startSearchFromDateIndex == -1 || startSearchToDateIndex == -1) {
-                    throw new RecordException("Error in Event: Either 'From' or 'To' date not specified.");
-                }
-
-                if (startSearchToDateIndex < startSearchFromDateIndex) {
-                    // System.err.println("Error in Event: 'To' date specified before 'From' date.");
-                    throw new RecordException("Error in Event: 'To' date specified before 'From' date.");
-                }
-
-                String task = input.substring(5, startSearchFromDateIndex).strip();
-                if (task.length() == 0) {
-                    throw new RecordException("ListItem description of item is not given.");
-                }
-
-                int listIndex = ListParser.createListEventFromLocalDT(input, list);
-                if (listIndex != -1) {
-                    return echoNoted(list.getItem(listIndex).toString());
-                }
-            } else {
-                //     list.addItem(user_input);
-                //     echo_noted(user_input);
-                // System.out.println("Sorry! No such command available. Please try again yeah.");
-                return "Sorry! No such command available. Please try again yeah.";
-            }
-        }
-        return ";";
+        return list;
     }
 
     /**
@@ -255,12 +235,9 @@ public class Record {
      */
     public static void askInput() {
         boolean shouldContinue = true;
-        // String textAsk = "What else should I Record down?\n";
-
         try (Scanner scanner = new Scanner(System.in)) {
             while (shouldContinue) {
                 try {
-                    // System.out.println(textAsk);
                     echoAskInput();
                     String userInput;
 
@@ -299,7 +276,7 @@ public class Record {
      * @param strPath the path of the file from which to load the list
      */
     public static void retrieveList(String strPath) {
-        Record.list = new List();
+        Record.list = new RecordList();
         try {
             Storage.loadFromFile(Record.list, strPath);
         } catch (RecordException e) {

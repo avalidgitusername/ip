@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * should be completed.</p>
  */
 public class DeadlineItem extends ListItem {
-    private LocalDateTime byDate;
+    private final LocalDateTime byDate;
 
     /**
      * Constructs a {@code DeadlineItem} with the specified task description and deadline.
@@ -32,13 +32,13 @@ public class DeadlineItem extends ListItem {
 
         sb.append(super.toString());
 
-        String s1 = String.format(" (Due: %s)", this.byDate);
-        sb.append(s1);
+        String deadlineDescription = String.format(" (Due: %s)", this.byDate);
+        sb.append(deadlineDescription);
         return sb.toString();
     }
 
     @Override
     public String saveString() {
-        return String.format("D, %s, '%s', '%s'", this.isDone ? "1" : "0", this.taskDesc, this.byDate);
+        return String.format("D, %s, '%s', '%s'", this.isDone ? "1" : "0", taskDesc, byDate);
     }
 }

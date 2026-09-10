@@ -29,32 +29,7 @@ public class DialogBoxController extends HBox {
      * @param text the string for the image
      * @param image the image object itself to display
      */
-    public DialogBoxController(String text, Image image) {
-        // -----Part 2-----
-        // text = new Label(s);
-        // displayPicture = new ImageView(i);
-        // this.getChildren().addAll(text, displayPicture);
-        // text = new Label(s);
-        // displayPicture = new ImageView(i);
-        // -----End Part 2-----
-
-        // -----Part 2b-----
-        //Styling the dialog box
-        // text = new Label(s);
-        // displayPicture = new ImageView(i);
-        // text.setWrapText(true);
-        // displayPicture.setFitWidth(100.0);
-        // displayPicture.setFitHeight(100.0);
-        // this.setAlignment(Pos.TOP_RIGHT);
-
-        // this.getChildren().addAll(text, displayPicture);
-        // ------End Part 2b-----
-
-        // -----Part 4-----
-
-        assert text != null : "Dialog text must not be null";
-        assert image != null : "Dialog image must not be null";
-
+    public DialogBoxController(String text, Image img) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(RecordGui.class.getResource("/view/DialogBox.fxml"));
             fxmlLoader.setController(this);
@@ -65,12 +40,10 @@ public class DialogBoxController extends HBox {
             assert displayPicture != null : "Display picture must be injected by FXML";
 
             dialog.setText(text);
-            displayPicture.setImage(image);
+            displayPicture.setImage(img);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // -----End Part 4-----
-
     }
 
     /**
@@ -78,24 +51,24 @@ public class DialogBoxController extends HBox {
      */
     private void flip() {
         this.setAlignment(Pos.TOP_LEFT);
-        ObservableList<Node> tmp = FXCollections.observableArrayList(this.getChildren());
-        FXCollections.reverse(tmp);
-        this.getChildren().setAll(tmp);
+        ObservableList<Node> childNodes = FXCollections.observableArrayList(this.getChildren());
+        FXCollections.reverse(childNodes);
+        this.getChildren().setAll(childNodes);
     }
 
-    public static DialogBoxController getUserDialog(String s, Image i) {
-        assert s != null : "User dialog text must not be null";
-        assert i != null : "User dialog image must not be null";
+    public static DialogBoxController getUserDialog(String text, Image img) {
+        assert text != null : "User dialog text must not be null";
+        assert img != null : "User dialog image must not be null";
 
-        return new DialogBoxController(s, i);
+        return new DialogBoxController(text, img);
     }
 
-    public static DialogBoxController getRecordDialog(String s, Image i) {
-        assert s != null : "Record dialog text must not be null";
-        assert i != null : "Record dialog image must not be null";
+    public static DialogBoxController getRecordDialog(String text, Image img) {
+        assert text != null : "Record dialog text must not be null";
+        assert img != null : "Record dialog image must not be null";
 
-        var db = new DialogBoxController(s, i);
-        db.flip();
-        return db;
+        var dialogBox = new DialogBoxController(text, img);
+        dialogBox.flip();
+        return dialogBox;
     }
 }

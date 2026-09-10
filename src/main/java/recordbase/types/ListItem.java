@@ -3,14 +3,14 @@ package recordbase.types;
 /**
  * Represents a generic task item in the Record application.
  */
-public class ListItem {
+public abstract class ListItem {
     protected final String taskDesc;
     protected boolean isDone = false;
 
     /**
      * Creates a {@code ListItem} with the specified task description.
      *
-     * @param task the description of the task
+     * @param task the description of the item
      */
     public ListItem(String taskDesc) {
         assert taskDesc != null : "Task description must not be null";
@@ -19,14 +19,14 @@ public class ListItem {
     }
 
     /**
-     * Marks the tasks as completed.
+     * Marks the item as completed.
      */
     public void setDone() {
         this.isDone = true;
     }
 
     /**
-     * Marks the tasks as un-completed.
+     * Marks the item as un-completed.
      */
     public void setNotDone() {
         this.isDone = false;
@@ -38,9 +38,7 @@ public class ListItem {
      *
      * @return the string representation of this item for storage
      */
-    public String saveString() {
-        return "Stub String";
-    }
+    public abstract String saveString();
 
     @Override
     public String toString() {
