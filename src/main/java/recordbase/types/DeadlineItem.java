@@ -18,6 +18,8 @@ public class DeadlineItem extends ListItem {
      * @param byDate the date and time which the task should be completed
      */
     public DeadlineItem(String taskDesc, LocalDateTime byDate) {
+        assert byDate != null : "Deadline must not be null";
+
         super(taskDesc);
         this.byDate = byDate;
     }

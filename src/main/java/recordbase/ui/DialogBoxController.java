@@ -51,17 +51,24 @@ public class DialogBoxController extends HBox {
         // ------End Part 2b-----
 
         // -----Part 4-----
+
+        assert text != null : "Dialog text must not be null";
+        assert image != null : "Dialog image must not be null";
+
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(RecordGui.class.getResource("/view/DialogBox.fxml"));
             fxmlLoader.setController(this);
             fxmlLoader.setRoot(this);
             fxmlLoader.load();
+
+            assert dialog != null : "Dialog label must be injected by FXML";
+            assert displayPicture != null : "Display picture must be injected by FXML";
+
+            dialog.setText(text);
+            displayPicture.setImage(image);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        dialog.setText(text);
-        displayPicture.setImage(image);
         // -----End Part 4-----
 
     }
@@ -77,10 +84,16 @@ public class DialogBoxController extends HBox {
     }
 
     public static DialogBoxController getUserDialog(String s, Image i) {
+        assert s != null : "User dialog text must not be null";
+        assert i != null : "User dialog image must not be null";
+
         return new DialogBoxController(s, i);
     }
 
     public static DialogBoxController getRecordDialog(String s, Image i) {
+        assert s != null : "Record dialog text must not be null";
+        assert i != null : "Record dialog image must not be null";
+
         var db = new DialogBoxController(s, i);
         db.flip();
         return db;

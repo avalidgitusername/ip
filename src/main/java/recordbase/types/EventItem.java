@@ -20,6 +20,10 @@ public class EventItem extends ListItem {
      */
 
     public EventItem(String taskDesc, LocalDateTime fromDate, LocalDateTime toDate) {
+        assert fromDate != null : "Event start must not be null";
+        assert toDate != null : "Event end must not be null";
+        assert !toDate.isBefore(fromDate) : "Event end must not be before its start";
+
         super(taskDesc);
         this.fromDate = fromDate;
         this.toDate = toDate;

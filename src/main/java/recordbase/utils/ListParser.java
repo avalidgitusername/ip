@@ -49,6 +49,8 @@ public class ListParser {
                 .withResolverStyle(ResolverStyle.STRICT);
 
     private static LocalDateTime parseDateTime(String dateText, String timeText) {
+        assert dateText != null : "Date text must not be null";
+
         LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
 
         if (timeText == null) {
@@ -69,12 +71,18 @@ public class ListParser {
      * @throws RecordException if the command is not properly formatted
      */
     public static int createListToDoFromLocalDT(String command, List list) {
+        assert command != null : "Command must not be null";
+        assert list != null : "List must not be null";
+
         System.out.print(String.format("Parsing: %s", command));
         Matcher matcher = TODO_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
+
+        assert matcher.group("task") != null : "Task must not be null";
+
         String task = matcher.group("task");
 
         return list.addToDoItem(task);
@@ -89,12 +97,18 @@ public class ListParser {
      * @throws RecordException if the command is not properly formatted
      */
     public static int createListDeadlineFromLocalDT(String command, List list) {
+        assert command != null : "Command must not be null";
+        assert list != null : "List must not be null";
+
         Matcher matcher = DEADLINE_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
             // System.out.println("Invalid Deadline command.");
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
+
+        assert matcher.group("task") != null : "Task must not be null";
+
         String task = matcher.group("task");
         LocalDateTime byDT = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
 
@@ -110,15 +124,23 @@ public class ListParser {
      * @throws RecordException if the command is not properly formatted
      */
     public static int createListEventFromLocalDT(String command, List list) {
+        assert command != null : "Command must not be null";
+        assert list != null : "List must not be null";
+
         Matcher matcher = EVENT_PATTERN.matcher(command);
 
         if (!matcher.matches()) {
             throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
         }
+
+        assert matcher.group("task") != null : "Task must not be null";
+
         String task = matcher.group("task");
 
         LocalDateTime fromDT = parseDateTime(matcher.group("fromDate"), matcher.group("fromTime"));
         LocalDateTime toDT = parseDateTime(matcher.group("toDate"), matcher.group("toTime"));
+
+        assert !toDT.isBefore(fromDT) : "Event end must not be before its start";
 
         return list.addEventItem(task, fromDT, toDT);
     }

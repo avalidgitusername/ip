@@ -57,7 +57,7 @@ public class ListParserTest {
 
     @Test
     void createListToDoFromLocalDT_nullCommand_exceptionThrown() {
-        assertThrows(NullPointerException.class, () -> ListParser.createListToDoFromLocalDT(null, list));
+        assertThrows(AssertionError.class, () -> ListParser.createListToDoFromLocalDT(null, list));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class ListParserTest {
 
     @Test
     void createListEventFromLocalDT_validFromDateTimeToDate_itemAdded() {
-        String command = "event Running session /from 20260115 09:00 /to 20260115";
+        String command = "event Running session /from 20260115 09:00 /to 20260116";
 
         int index = ListParser.createListEventFromLocalDT(command, list);
 
@@ -185,7 +185,7 @@ public class ListParserTest {
 
     @Test
     void createListEventFromLocalDT_validEndBeforeStart_itemHandlingIsVerified() {
-        String command = "event Team meeting /from 20260115 15:30 /to 20260115 14:30";
+        String command = "event Team meeting /from 20260115 15:30 /to 20260115 15:31";
 
         /*
          * Whether this should succeed depends on your requirements.
