@@ -1,6 +1,5 @@
 package utils;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import recordbase.exceptions.RecordException;
+import recordbase.types.Priority;
 import recordbase.types.RecordList;
 import recordbase.utils.ListParser;
 
@@ -47,6 +47,29 @@ public class ListParserTest {
     }
 
     @Test
+    void createListToDoFromLocalDT_withPriority_storesPriority() {
+        int index = ListParser.parseToDo("todo Submit quiz /priority high", list);
+
+        assertTrue(list.getItem(index).getPriority() == Priority.HIGH);
+    }
+
+    @Test
+    void createListDeadlineFromLocalDT_withNumericPriority_storesPriority() {
+        int index = ListParser.parseDeadline(
+                "deadline Submit report /by 20260115 /priority 2", list);
+
+        assertTrue(list.getItem(index).getPriority() == Priority.MEDIUM_HIGH);
+    }
+
+    @Test
+    void createListEventFromLocalDT_withoutPriority_defaultsToMedium() {
+        int index = ListParser.parseEvent(
+                "event Meeting /from 20260115 /to 20260116", list);
+
+        assertTrue(list.getItem(index).getPriority() == Priority.MEDIUM);
+    }
+
+    @Test
     void parseToDo_validCommandWithSpecialChars_itemAdded() {
         String command = "todo Buy milk '\"\'\"}><./where";
 
@@ -57,7 +80,7 @@ public class ListParserTest {
 
     @Test
     void parseToDo_nullCommand_exceptionThrown() {
-        assertThrows(NullPointerException.class, () -> ListParser.parseToDo(null, list));
+        assertThrows(AssertionError.class, () -> ListParser.parseToDo(null, list));
     }
 
     @Test
@@ -152,12 +175,10 @@ public class ListParserTest {
     }
 
     @Test
-    void parseEvent_validFromDateTimeToDate_itemAdded() {
+    void parseEvent_dateOnlyEndBeforeStart_exceptionThrown() {
         String command = "event Running session /from 20260115 09:00 /to 20260115";
 
-        int index = ListParser.parseEvent(command, list);
-
-        assertTrue(index == 0);
+        assertThrows(AssertionError.class, () -> ListParser.parseEvent(command, list));
     }
 
     @Test
@@ -184,19 +205,10 @@ public class ListParserTest {
     }
 
     @Test
-    void parseEvent_validEndBeforeStart_itemHandlingIsVerified() {
+    void parseEvent_endBeforeStart_exceptionThrown() {
         String command = "event Team meeting /from 20260115 15:30 /to 20260115 14:30";
 
-        /*
-         * Whether this should succeed depends on your requirements.
-         * If reversed events are invalid, this test should expect an exception.
-         */
-        assertDoesNotThrow(() -> ListParser.parseEvent(command, list));
-
-        int index = ListParser.parseEvent(command, list);
-
-        // Index 1 as assertDoesNotThrow should have added 1 also
-        assertTrue(index == 1);
+        assertThrows(AssertionError.class, () -> ListParser.parseEvent(command, list));
     }
 
     @Test

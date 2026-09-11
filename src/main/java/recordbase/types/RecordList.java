@@ -71,7 +71,14 @@ public class RecordList {
      * @return the index of the newly added event item
      */
     public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate) {
-        this.listItems.add(new EventItem(task, fromDate, toDate));
+        return addEventItem(task, fromDate, toDate, Priority.MEDIUM);
+    }
+
+    /**
+     * Adds an event with the specified priority.
+     */
+    public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate, Priority priority) {
+        this.listItems.add(new EventItem(task, fromDate, toDate, priority));
         return this.listItems.size() - 1;
     }
     /**
@@ -82,7 +89,14 @@ public class RecordList {
      * @return the index of the newly added deadline item
      */
     public int addDeadlineItem(String task, LocalDateTime byDate) {
-        this.listItems.add(new DeadlineItem(task, byDate));
+        return addDeadlineItem(task, byDate, Priority.MEDIUM);
+    }
+
+    /**
+     * Adds a deadline with the specified priority.
+     */
+    public int addDeadlineItem(String task, LocalDateTime byDate, Priority priority) {
+        this.listItems.add(new DeadlineItem(task, byDate, priority));
         return this.listItems.size() - 1;
     }
     /**
@@ -92,7 +106,14 @@ public class RecordList {
      * @return the index of the newly added to-do item
      */
     public int addToDoItem(String task) {
-        this.listItems.add(new ToDoItem(task));
+        return addToDoItem(task, Priority.MEDIUM);
+    }
+
+    /**
+     * Adds a to-do task with the specified priority.
+     */
+    public int addToDoItem(String task, Priority priority) {
+        this.listItems.add(new ToDoItem(task, priority));
         return this.listItems.size() - 1;
     }
 

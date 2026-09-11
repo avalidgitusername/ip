@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import recordbase.exceptions.RecordException;
+import recordbase.types.Priority;
 import recordbase.types.RecordList;
 
 /**
@@ -20,13 +21,14 @@ import recordbase.types.RecordList;
 public class ListParser {
     // Patterns generated using AI.
     private static final Pattern TODO_PATTERN = Pattern.compile(
-            "\\Atodo[ \\t]+(?<task>.+?)[ \\t]*\\z"
+            "\\Atodo[ \\t]+(?<task>.+?)(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?[ \\t]*\\z"
     );
 
     private static final Pattern DEADLINE_PATTERN = Pattern.compile(
             "\\Adeadline[ \\t]+(?<task>.+?)[ \\t]+/by[ \\t]+"
             + "(?<byDate>\\d{8})"
             + "(?:[ \\t]+(?<byTime>\\d{2}:\\d{2}))?"
+            + "(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?"
             + "\\z"
     );
 
@@ -37,6 +39,7 @@ public class ListParser {
             + "[ \\t]+/to[ \\t]+"
             + "(?<toDate>\\d{8})"
             + "(?:[ \\t]+(?<toTime>\\d{2}:\\d{2}))?"
+            + "(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?"
             + "\\z"
     );
 
@@ -48,7 +51,6 @@ public class ListParser {
 
     private static LocalDateTime parseDateTime(String dateText, String timeText) {
         assert dateText != null : "Date text must not be null";
-
         LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
 
         if (timeText == null) {
@@ -58,6 +60,13 @@ public class ListParser {
         LocalTime time = LocalTime.parse(timeText, TIME_FORMATTER);
 
         return LocalDateTime.of(date, time);
+    }
+
+    /**
+     * Parses an optional priority, defaulting to medium when it is omitted.
+     */
+    private static Priority parsePriority(String priorityText) {
+        return priorityText == null ? Priority.MEDIUM : Priority.fromString(priorityText);
     }
 
     /**
@@ -82,7 +91,7 @@ public class ListParser {
 
         String task = matcher.group("task");
 
-        return list.addToDoItem(task);
+        return list.addToDoItem(task, parsePriority(matcher.group("priority")));
     }
 
     /**
@@ -108,7 +117,7 @@ public class ListParser {
         String task = matcher.group("task");
         LocalDateTime deadline = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
 
-        return list.addDeadlineItem(task, deadline);
+        return list.addDeadlineItem(task, deadline, parsePriority(matcher.group("priority")));
     }
 
     /**
@@ -138,6 +147,7 @@ public class ListParser {
 
         assert !endDateTime.isBefore(startDateTime) : "Event end must not be before its start";
 
-        return list.addEventItem(task, startDateTime, endDateTime);
+        return list.addEventItem(task, startDateTime, endDateTime,
+                parsePriority(matcher.group("priority")));
     }
 }
