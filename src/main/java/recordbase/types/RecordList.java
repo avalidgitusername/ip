@@ -117,6 +117,12 @@ public class RecordList {
         return this.listItems.size() - 1;
     }
 
+    /** Adds a scheduled to-do task with the specified priority. */
+    public int addToDoItem(String task, LocalDateTime scheduledDate, Priority priority) {
+        this.listItems.add(new ToDoItem(task, scheduledDate, priority));
+        return this.listItems.size() - 1;
+    }
+
     /**
      * Marks the item at the specified index as done.
      *

@@ -1,8 +1,10 @@
 package recordbase;
 
+import java.util.List;
 import java.util.Scanner;
 
 import recordbase.exceptions.RecordException;
+import recordbase.types.ListItem;
 import recordbase.types.ParsedCommand;
 import recordbase.types.RecordList;
 import recordbase.utils.CommandParser;
@@ -96,7 +98,7 @@ public class Record {
             case TODO -> createToDo(command.arguments());
             case DEADLINE -> createDeadline(command.arguments());
             case EVENT -> createEvent(command.arguments());
-            case UNKNOWN -> "Sorry! No such command available. Please try again yeah.";
+            case UNKNOWN -> throw new RecordException("Sorry! No such command available. Please try again.");
         };
 
     }
@@ -226,6 +228,20 @@ public class Record {
             list = new RecordList();
         }
         return list;
+    }
+
+    /** Returns a read-only snapshot of the tasks for graphical list rendering. */
+    public static List<ListItem> getItems() {
+        return getOrCreateList().getItems();
+    }
+
+    /** Updates a task selected in the graphical list using its zero-based position. */
+    public static void setItemCompletion(int index, boolean isDone) {
+        if (isDone) {
+            getOrCreateList().setListItemDone(index);
+        } else {
+            getOrCreateList().setListItemNotDone(index);
+        }
     }
 
     /**

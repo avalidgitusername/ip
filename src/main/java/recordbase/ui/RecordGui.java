@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import recordbase.Record;
 
 /**
  * JavaFX GUI for the Record application.
@@ -33,6 +34,13 @@ public class RecordGui extends Application {
 
             Scene scene = new Scene(ap);
             stage.setScene(scene);
+            stage.setTitle("Record");
+            stage.setMinWidth(320);
+            stage.setMinHeight(360);
+            stage.setOnCloseRequest(event -> {
+                Record.saveList("data/listdata.txt");
+                Record.goodbye();
+            });
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,0 +1,30 @@
+.app-root { -fx-background-color: #eef3f8; -fx-font-family: "Segoe UI", "Inter", "Helvetica Neue", sans-serif; -fx-font-size: 13px; }
+.app-header { -fx-background-color: linear-gradient(to right, #172c46, #244766); -fx-effect: dropshadow(gaussian, rgba(15,35,55,0.20), 10, 0, 0, 2); }
+.app-title { -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; }
+.app-subtitle, .avatar-label { -fx-text-fill: #c8d8e8; -fx-font-size: 11px; }
+.choice-box { -fx-background-color: rgba(255,255,255,0.96); -fx-background-radius: 8px; }
+.conversation-scroll, .conversation-scroll > .viewport, .dialog-container {
+    -fx-background-color: #eef3f8;
+    -fx-background-image: url("../images/ConversationTile.png");
+    -fx-background-repeat: repeat;
+    -fx-background-size: 240px 240px;
+}
+.conversation-scroll { -fx-background-insets: 0; -fx-padding: 0; }
+.message-bubble { -fx-padding: 9px 12px; -fx-background-radius: 14px; -fx-text-fill: #1e2936; -fx-line-spacing: 2px; }
+.record-dialog .message-bubble { -fx-background-color: white; -fx-background-radius: 4px 14px 14px 14px; -fx-effect: dropshadow(gaussian, rgba(35,55,75,0.10), 5, 0, 0, 1); }
+.user-dialog .message-bubble { -fx-background-color: #d7f7e8; -fx-background-radius: 14px 4px 14px 14px; }
+.error-dialog .message-bubble { -fx-background-color: #fff0f1; -fx-border-color: #e05260; -fx-border-width: 0 0 0 3px; -fx-border-radius: 4px 14px 14px 4px; -fx-text-fill: #8b2430; }
+.composer { -fx-background-color: white; -fx-border-color: #dbe3eb; -fx-border-width: 1px 0 0 0; }
+.text-field { -fx-background-color: #f4f7fa; -fx-background-radius: 10px; -fx-border-color: #d6e0e9; -fx-border-radius: 10px; -fx-padding: 9px 11px; }
+.text-field:focused { -fx-border-color: #3182b8; -fx-background-color: white; }
+.button { -fx-cursor: hand; -fx-font-weight: bold; -fx-padding: 9px 14px; -fx-background-radius: 10px; }
+.send-button { -fx-background-color: #2389c7; -fx-text-fill: white; }
+.send-button:hover { -fx-background-color: #1679b5; }
+.secondary-button { -fx-background-color: #e7eef4; -fx-text-fill: #27445d; }
+.secondary-button:hover { -fx-background-color: #d9e5ee; }
+.task-list { -fx-background-color: rgba(255,255,255,0.96); -fx-background-radius: 12px; -fx-effect: dropshadow(gaussian, rgba(35,55,75,0.10), 5, 0, 0, 1); }
+.task-list-title { -fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #244766; }
+.task-row { -fx-padding: 7px 5px; -fx-text-fill: #263746; }
+.task-row:hover { -fx-background-color: #edf6fb; -fx-background-radius: 7px; }
+.task-row:completed { -fx-text-fill: #71808d; }
+.empty-state { -fx-text-fill: #6b7b88; -fx-font-style: italic; }

@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,142 +17,132 @@ import recordbase.exceptions.RecordException;
 import recordbase.types.Priority;
 import recordbase.types.RecordList;
 
-/**
- * Provides methods for parsing user commands into {@code ListItem} objects.
- *
- * <p>The parser validates commands formats and extracts task details, dates, and times before adding
- * the corresponding items into a {@code RecordList}.</p>
- */
+/** Parses task commands and their slash-prefixed options. */
 public class ListParser {
-    // Patterns generated using AI.
-    private static final Pattern TODO_PATTERN = Pattern.compile(
-            "\\Atodo[ \\t]+(?<task>.+?)(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?[ \\t]*\\z"
+    private static final Pattern TODO_DATE_PATTERN = Pattern.compile(
+            "^(?<description>.*\\S)\\s+(?<date>\\d{8})(?:\\s+(?<time>\\d{2}:\\d{2}))?$"
     );
-
-    private static final Pattern DEADLINE_PATTERN = Pattern.compile(
-            "\\Adeadline[ \\t]+(?<task>.+?)[ \\t]+/by[ \\t]+"
-            + "(?<byDate>\\d{8})"
-            + "(?:[ \\t]+(?<byTime>\\d{2}:\\d{2}))?"
-            + "(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?"
-            + "\\z"
-    );
-
-    private static final Pattern EVENT_PATTERN = Pattern.compile(
-            "\\Aevent[ \\t]+(?<task>.+?)[ \\t]+/from[ \\t]+"
-            + "(?<fromDate>\\d{8})"
-            + "(?:[ \\t]+(?<fromTime>\\d{2}:\\d{2}))?"
-            + "[ \\t]+/to[ \\t]+"
-            + "(?<toDate>\\d{8})"
-            + "(?:[ \\t]+(?<toTime>\\d{2}:\\d{2}))?"
-            + "(?:[ \\t]+/priority[ \\t]+(?<priority>[A-Za-z0-9-]+))?"
-            + "\\z"
-    );
-
     private static final DateTimeFormatter DATE_FORMATTER =
-        DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
-
+            DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter TIME_FORMATTER =
-        DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.STRICT);
+            DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.STRICT);
 
-    private static LocalDateTime parseDateTime(String dateText, String timeText) {
-        assert dateText != null : "Date text must not be null";
-        LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
+    /** Holds a description and the options extracted from a command. */
+    private record ParsedOptions(String description, Map<String, List<String>> values) { }
 
-        if (timeText == null) {
-            return date.atStartOfDay();
-        }
-
-        LocalTime time = LocalTime.parse(timeText, TIME_FORMATTER);
-
-        return LocalDateTime.of(date, time);
-    }
-
-    /**
-     * Parses an optional priority, defaulting to medium when it is omitted.
-     */
-    private static Priority parsePriority(String priorityText) {
-        return priorityText == null ? Priority.MEDIUM : Priority.fromString(priorityText);
-    }
-
-    /**
-     * Creates a {@code ToDoItem} from a properly formatted command and adds it to the specified list.
-     *
-     * @param command the command containing the task description
-     * @param list the list to which the new to-do item is added
-     * @return the index of the newly created item
-     * @throws RecordException if the command is not properly formatted
-     */
+    /** Parses a to-do and adds it to the supplied list. */
     public static int parseToDo(String command, RecordList list) {
         assert command != null : "Command must not be null";
         assert list != null : "List must not be null";
-
-        Matcher matcher = TODO_PATTERN.matcher(command);
-
-        if (!matcher.matches()) {
-            throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
+        ParsedOptions parsed = parseOptions(command, "todo", Set.of("priority"));
+        Matcher dateMatcher = TODO_DATE_PATTERN.matcher(parsed.description());
+        if (dateMatcher.matches()) {
+            LocalDateTime scheduledDate = parseDateTime(dateMatcher.group("date"), dateMatcher.group("time"));
+            return list.addToDoItem(dateMatcher.group("description"), scheduledDate,
+                    parsePriority(parsed.values().get("priority")));
         }
-
-        assert matcher.group("task") != null : "Task must not be null";
-
-        String task = matcher.group("task");
-
-        return list.addToDoItem(task, parsePriority(matcher.group("priority")));
+        return list.addToDoItem(parsed.description(), parsePriority(parsed.values().get("priority")));
     }
 
-    /**
-     * Creates a {@code DeadlineItem} from a properly formatted command and adds it to the specified list.
-     *
-     * @param command the command containing the task description and deadline
-     * @param list the list to which the new deadline item is added
-     * @return the index of the newly created item
-     * @throws RecordException if the command is not properly formatted
-     */
+    /** Parses a deadline and adds it to the supplied list. */
     public static int parseDeadline(String command, RecordList list) {
         assert command != null : "Command must not be null";
         assert list != null : "List must not be null";
-
-        Matcher matcher = DEADLINE_PATTERN.matcher(command);
-
-        if (!matcher.matches()) {
-            throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
-        }
-
-        assert matcher.group("task") != null : "Task must not be null";
-
-        String task = matcher.group("task");
-        LocalDateTime deadline = parseDateTime(matcher.group("byDate"), matcher.group("byTime"));
-
-        return list.addDeadlineItem(task, deadline, parsePriority(matcher.group("priority")));
+        ParsedOptions parsed = parseOptions(command, "deadline", Set.of("by", "priority"));
+        LocalDateTime deadline = parseRequiredDateTime(parsed.values(), "by");
+        return list.addDeadlineItem(parsed.description(), deadline,
+                parsePriority(parsed.values().get("priority")));
     }
 
-    /**
-     * Creates a {@code EventItem} from a properly formatted command and adds it to the specified list.
-     *
-     * @param command the command containing the task description and event times
-     * @param list the list to which the new event item is added
-     * @return the index of the newly created item
-     * @throws RecordException if the command is not properly formatted
-     */
+    /** Parses an event, accepting its options in any order, and adds it to the list. */
     public static int parseEvent(String command, RecordList list) {
         assert command != null : "Command must not be null";
         assert list != null : "List must not be null";
+        ParsedOptions parsed = parseOptions(command, "event", Set.of("from", "to", "priority"));
+        LocalDateTime from = parseRequiredDateTime(parsed.values(), "from");
+        LocalDateTime to = parseRequiredDateTime(parsed.values(), "to");
+        if (to.isBefore(from)) {
+            throw new RecordException("The event end must not be before its start.");
+        }
+        return list.addEventItem(parsed.description(), from, to,
+                parsePriority(parsed.values().get("priority")));
+    }
 
-        Matcher matcher = EVENT_PATTERN.matcher(command);
+    /** Separates free text from slash options, allowing options in any order. */
+    private static ParsedOptions parseOptions(String command, String commandName, Set<String> allowedOptions) {
+        String trimmed = command.trim();
+        if (!trimmed.equals(commandName) && !trimmed.startsWith(commandName + " ")) {
+            throw new RecordException("Invalid " + commandName + " command.");
+        }
+        String arguments = trimmed.substring(commandName.length()).trim();
+        String[] tokens = arguments.isEmpty() ? new String[0] : arguments.split("\\s+");
+        List<String> descriptionTokens = new ArrayList<>();
+        Map<String, List<String>> optionValues = new HashMap<>();
 
-        if (!matcher.matches()) {
-            throw new RecordException("Dates should be in \"yyyymmdd [hh:mm]\"");
+        for (int index = 0; index < tokens.length;) {
+            String token = tokens[index];
+            if (!token.startsWith("/")) {
+                descriptionTokens.add(token);
+                index++;
+                continue;
+            }
+            String option = token.substring(1).toLowerCase();
+            if (option.isBlank() || !allowedOptions.contains(option)) {
+                throw new RecordException("Unknown option: " + token);
+            }
+            if (optionValues.containsKey(option)) {
+                throw new RecordException("Option /" + option + " was provided more than once.");
+            }
+            List<String> values = new ArrayList<>();
+            index++;
+            if (index < tokens.length && !tokens[index].startsWith("/")) {
+                values.add(tokens[index++]);
+            }
+            if (!option.equals("priority") && index < tokens.length
+                    && tokens[index].matches("\\d{2}:\\d{2}")) {
+                values.add(tokens[index++]);
+            }
+            optionValues.put(option, values);
         }
 
-        assert matcher.group("task") != null : "Task must not be null";
+        String description = String.join(" ", descriptionTokens).trim();
+        if (description.isEmpty()) {
+            throw new RecordException("Please provide a task description.");
+        }
+        return new ParsedOptions(description, optionValues);
+    }
 
-        String task = matcher.group("task");
+    /** Parses a required date option in {@code yyyymmdd [hh:mm]} format. */
+    private static LocalDateTime parseRequiredDateTime(Map<String, List<String>> options, String name) {
+        List<String> values = options.get(name);
+        if (values == null) {
+            throw new RecordException("Please provide /" + name + " in yyyymmdd [hh:mm] format.");
+        }
+        if (values.size() < 1 || values.size() > 2) {
+            throw new RecordException("Option /" + name + " must use yyyymmdd [hh:mm].");
+        }
+        if (!values.get(0).matches("\\d{8}")
+                || values.size() == 2 && !values.get(1).matches("\\d{2}:\\d{2}")) {
+            throw new RecordException("Option /" + name + " must use yyyymmdd [hh:mm].");
+        }
+        return parseDateTime(values.get(0), values.size() == 2 ? values.get(1) : null);
+    }
 
-        LocalDateTime startDateTime = parseDateTime(matcher.group("fromDate"), matcher.group("fromTime"));
-        LocalDateTime endDateTime = parseDateTime(matcher.group("toDate"), matcher.group("toTime"));
+    /** Converts a validated compact date and optional time into a date-time value. */
+    private static LocalDateTime parseDateTime(String dateText, String timeText) {
+        LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
+        LocalTime time = timeText == null ? LocalTime.MIDNIGHT : LocalTime.parse(timeText, TIME_FORMATTER);
+        return LocalDateTime.of(date, time);
+    }
 
-        assert !endDateTime.isBefore(startDateTime) : "Event end must not be before its start";
-
-        return list.addEventItem(task, startDateTime, endDateTime,
-                parsePriority(matcher.group("priority")));
+    /** Parses an optional one-value priority, defaulting to medium. */
+    private static Priority parsePriority(List<String> values) {
+        if (values == null) {
+            return Priority.MEDIUM;
+        }
+        if (values.size() != 1) {
+            throw new RecordException("Option /priority needs exactly one value.");
+        }
+        return Priority.fromString(values.get(0));
     }
 }

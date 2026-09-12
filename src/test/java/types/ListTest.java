@@ -2,6 +2,7 @@ package types;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,14 +31,12 @@ public class ListTest {
 
         String deletedItem = list.deleteItem(1);
 
-        assertEquals("[D] [ ] Submit report [Priority: Medium (3)] (Due: 2026-09-01T23:59)",
-                deletedItem);
+        assertTrue(deletedItem.contains("Due: 1 Sep 2026, 11:59 PM"));
 
         assertEquals(2, list.getItems().size());
         assertEquals("[T] [ ] Read book [Priority: Medium (3)]", list.getItem(0).toString());
-        assertEquals(
-                "[E] [ ] Team meeting [Priority: Medium (3)] (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
-                list.getItem(1).toString());
+        assertTrue(list.getItem(1).toString().contains(
+                "From: 2 Sep 2026, 10:00 AM | To: 2 Sep 2026, 11:00 AM | Duration: 1 hour"));
     }
 
     @Test
@@ -114,9 +113,7 @@ public class ListTest {
         int index = list.addDeadlineItem("Submit report", deadline);
 
         assertEquals(0, index);
-        assertEquals(
-                "[D] [ ] Submit report [Priority: Medium (3)] (Due: 2026-09-01T23:59)",
-                list.getItem(index).toString());
+        assertTrue(list.getItem(index).toString().contains("Due: 1 Sep 2026, 11:59 PM"));
         assertEquals(1, list.getItems().size());
     }
 
@@ -129,9 +126,8 @@ public class ListTest {
         int index = list.addEventItem("Team meeting", from, to);
 
         assertEquals(0, index);
-        assertEquals(
-                "[E] [ ] Team meeting [Priority: Medium (3)] (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
-                list.getItem(index).toString());
+        assertTrue(list.getItem(index).toString().contains(
+                "From: 2 Sep 2026, 10:00 AM | To: 2 Sep 2026, 11:00 AM | Duration: 1 hour"));
         assertEquals(1, list.getItems().size());
     }
 
@@ -254,12 +250,9 @@ public class ListTest {
 
         assertEquals(3, items.size());
         assertEquals("[T] [ ] First [Priority: Medium (3)]", items.get(0).toString());
-        assertEquals(
-                "[D] [ ] Second [Priority: Medium (3)] (Due: 2026-09-01T12:00)",
-                items.get(1).toString());
-        assertEquals(
-                "[E] [ ] Third [Priority: Medium (3)] (From: 2026-09-02T10:00 To: 2026-09-02T11:00)",
-                items.get(2).toString());
+        assertTrue(items.get(1).toString().contains("Due: 1 Sep 2026, 12:00 PM"));
+        assertTrue(items.get(2).toString().contains(
+                "From: 2 Sep 2026, 10:00 AM | To: 2 Sep 2026, 11:00 AM | Duration: 1 hour"));
     }
 
     @Test

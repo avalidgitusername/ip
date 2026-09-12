@@ -155,8 +155,11 @@ public class Storage {
      * @return the parsed {@code ToDoItem}
      */
     private static ListItem parseToDoItem(String line, Priority priority) {
-        String[] fields = extractQuotedFields(line, 1);
-        return new ToDoItem(fields[0], priority);
+        boolean hasScheduledDate = line.indexOf(QUOTED_FIELD_SEPARATOR) >= 0;
+        String[] fields = extractQuotedFields(line, hasScheduledDate ? 2 : 1);
+        return hasScheduledDate
+                ? new ToDoItem(fields[0], LocalDateTime.parse(fields[1]), priority)
+                : new ToDoItem(fields[0], priority);
     }
 
     /**

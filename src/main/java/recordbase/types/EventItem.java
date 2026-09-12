@@ -2,6 +2,8 @@ package recordbase.types;
 
 import java.time.LocalDateTime;
 
+import recordbase.utils.TimeDisplay;
+
 /**
  * Represents a task that occurs over a specified period of time.
  *
@@ -48,7 +50,9 @@ public class EventItem extends ListItem {
 
         sb.append(super.toString());
 
-        String durationDescription = String.format(" (From: %s To: %s)", this.fromDate, this.toDate);
+        String durationDescription = String.format(" (From: %s | To: %s | Duration: %s)",
+                TimeDisplay.formatDateTime(this.fromDate), TimeDisplay.formatDateTime(this.toDate),
+                TimeDisplay.formatDuration(this.fromDate, this.toDate));
         sb.append(durationDescription);
         return sb.toString();
     }
