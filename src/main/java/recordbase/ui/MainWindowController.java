@@ -26,6 +26,7 @@ import recordbase.types.ListItem;
  */
 public class MainWindowController extends AnchorPane {
     private static final int MAX_TRANSCRIPT_NODES = 80;
+    private static final int MAX_COMMAND_HISTORY = 100;
     private static final double NEAR_BOTTOM_THRESHOLD = 0.98;
     @FXML
     private ScrollPane scrollPane;
@@ -211,6 +212,9 @@ public class MainWindowController extends AnchorPane {
         if (commandHistory.isEmpty()
                 || !input.equalsIgnoreCase(commandHistory.get(commandHistory.size() - 1))) {
             commandHistory.add(input);
+            if (commandHistory.size() > MAX_COMMAND_HISTORY) {
+                commandHistory.remove(0);
+            }
         }
         commandHistoryIndex = commandHistory.size();
     }

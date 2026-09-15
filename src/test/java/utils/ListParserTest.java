@@ -139,8 +139,7 @@ public class ListParserTest {
         // February 30 is not a valid date.
         String command = "deadline Submit report /by 20260230 14:30";
 
-        assertThrows(java.time.format.DateTimeParseException.class, () -> ListParser
-                .parseDeadline(command, list));
+        assertThrows(RecordException.class, () -> ListParser.parseDeadline(command, list));
     }
 
     @Test
@@ -148,8 +147,7 @@ public class ListParserTest {
         // 25:00 is not a valid time.
         String command = "deadline Submit report /by 20260115 25:00";
 
-        assertThrows(java.time.format.DateTimeParseException.class, () -> ListParser
-                .parseDeadline(command, list));
+        assertThrows(RecordException.class, () -> ListParser.parseDeadline(command, list));
     }
 
     @Test
@@ -214,16 +212,22 @@ public class ListParserTest {
     void parseEvent_invalidStartDate_exceptionThrown() {
         String command = "event Team meeting /from 20261301 14:30 /to 20260115 15:30";
 
-        assertThrows(java.time.format.DateTimeParseException.class, () -> ListParser
-                .parseEvent(command, list));
+        assertThrows(RecordException.class, () -> ListParser.parseEvent(command, list));
     }
 
     @Test
     void parseEvent_invalidEndTime_exceptionThrown() {
         String command = "event Team meeting /from 20260115 14:30 /to 20260115 24:00";
 
-        assertThrows(java.time.format.DateTimeParseException.class, () -> ListParser
-                .parseEvent(command, list));
+        assertThrows(RecordException.class, () -> ListParser.parseEvent(command, list));
+
+    }
+
+    @Test
+    void parseEvent_duplicatePriority_exceptionThrown() {
+        String command = "event Meeting /from 20260115 /priority 1 /to 20260116 /priority 2";
+
+        assertThrows(RecordException.class, () -> ListParser.parseEvent(command, list));
     }
 
     @Test

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,9 +131,14 @@ public class ListParser {
 
     /** Converts a validated compact date and optional time into a date-time value. */
     private static LocalDateTime parseDateTime(String dateText, String timeText) {
-        LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
-        LocalTime time = timeText == null ? LocalTime.MIDNIGHT : LocalTime.parse(timeText, TIME_FORMATTER);
-        return LocalDateTime.of(date, time);
+        try {
+            LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
+            LocalTime time = timeText == null ? LocalTime.MIDNIGHT : LocalTime.parse(timeText, TIME_FORMATTER);
+            return LocalDateTime.of(date, time);
+        } catch (DateTimeParseException exception) {
+            throw new RecordException("Invalid date or time. Use a real calendar date as yyyymmdd"
+                    + " and an optional 24-hour time as hh:mm.", exception);
+        }
     }
 
     /** Parses an optional one-value priority, defaulting to medium. */

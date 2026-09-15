@@ -296,11 +296,15 @@ public class Record {
      * @param strPath the path of the file from which to load the list
      */
     public static void retrieveList(String strPath) {
-        Record.list = new RecordList();
+        RecordList loadedList = new RecordList();
         try {
-            Storage.loadFromFile(Record.list, strPath);
+            Storage.loadFromFile(loadedList, strPath);
+            Record.list = loadedList;
         } catch (RecordException e) {
             System.out.println(e.getMessage());
+            if (Record.list == null) {
+                Record.list = new RecordList();
+            }
         }
     }
 

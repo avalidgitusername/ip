@@ -13,6 +13,10 @@ import recordbase.exceptions.RecordException;
  */
 
 public class RecordList {
+    /** A deliberately conservative bound that keeps task data far below one gigabyte. */
+    public static final int MAX_ITEMS = 100_000;
+    /** Prevents a single pasted command from retaining an excessive amount of memory. */
+    public static final int MAX_DESCRIPTION_LENGTH = 10_000;
     private final ArrayList<ListItem> listItems;
 
     /**
@@ -41,6 +45,7 @@ public class RecordList {
     public int addItem(ListItem item) {
         assert item != null : "List item must not be null";
 
+        ensureCapacityFor(item.getTaskDescription());
         this.listItems.add(item);
         return this.listItems.size() - 1;
     }
@@ -78,8 +83,7 @@ public class RecordList {
      * Adds an event with the specified priority.
      */
     public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate, Priority priority) {
-        this.listItems.add(new EventItem(task, fromDate, toDate, priority));
-        return this.listItems.size() - 1;
+        return addItem(new EventItem(task, fromDate, toDate, priority));
     }
     /**
      * Adds an {@code DeadlineItem} with the specified task description and deadline to end of the list.
@@ -96,8 +100,7 @@ public class RecordList {
      * Adds a deadline with the specified priority.
      */
     public int addDeadlineItem(String task, LocalDateTime byDate, Priority priority) {
-        this.listItems.add(new DeadlineItem(task, byDate, priority));
-        return this.listItems.size() - 1;
+        return addItem(new DeadlineItem(task, byDate, priority));
     }
     /**
      * Adds an {@code ToDoItem} with the specified task description to end of the list.
@@ -113,14 +116,24 @@ public class RecordList {
      * Adds a to-do task with the specified priority.
      */
     public int addToDoItem(String task, Priority priority) {
-        this.listItems.add(new ToDoItem(task, priority));
-        return this.listItems.size() - 1;
+        return addItem(new ToDoItem(task, priority));
     }
 
     /** Adds a scheduled to-do task with the specified priority. */
     public int addToDoItem(String task, LocalDateTime scheduledDate, Priority priority) {
-        this.listItems.add(new ToDoItem(task, scheduledDate, priority));
-        return this.listItems.size() - 1;
+        return addItem(new ToDoItem(task, scheduledDate, priority));
+    }
+
+    /** Validates bounds before retaining user-controlled text in memory. */
+    private void ensureCapacityFor(String description) {
+        if (description.length() > MAX_DESCRIPTION_LENGTH) {
+            throw new RecordException("Task descriptions cannot exceed "
+                    + MAX_DESCRIPTION_LENGTH + " characters.");
+        }
+        if (listItems.size() >= MAX_ITEMS) {
+            throw new RecordException("The task limit of " + MAX_ITEMS
+                    + " has been reached. Delete an item before adding another.");
+        }
     }
 
     /**
