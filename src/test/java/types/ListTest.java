@@ -63,11 +63,11 @@ public class ListTest {
                 .deleteItem(1));
 
         assertEquals(
-                "ListError: No such index to delete.",
+                "That track number is not on your list.",
                 negativeIndexException.getMessage());
 
         assertEquals(
-                "ListError: No such index to delete.",
+                "That track number is not on your list.",
                 tooLargeIndexException.getMessage());
     }
 
@@ -196,11 +196,11 @@ public class ListTest {
                 .setListItemDone(1));
 
         assertEquals(
-                "Error in mark: No such item on list.",
+                "I can't mark that track — it is not on your list.",
                 negativeIndexException.getMessage());
 
         assertEquals(
-                "Error in mark: No such item on list.",
+                "I can't mark that track — it is not on your list.",
                 tooLargeIndexException.getMessage());
     }
 
@@ -216,11 +216,11 @@ public class ListTest {
                 .setListItemNotDone(1));
 
         assertEquals(
-                "Error in unmark: No such item on list.",
+                "I can't unmark that track — it is not on your list.",
                 negativeIndexException.getMessage());
 
         assertEquals(
-                "Error in unmark: No such item on list.",
+                "I can't unmark that track — it is not on your list.",
                 tooLargeIndexException.getMessage());
     }
 
@@ -270,7 +270,7 @@ public class ListTest {
     void toString_returnsMessageForEmptyList() {
         RecordList list = new RecordList();
 
-        assertEquals("No items in list!", list.toString());
+        assertEquals("The record is quiet — no tasks yet.", list.toString());
     }
 
     @Test

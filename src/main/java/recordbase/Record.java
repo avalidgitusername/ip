@@ -18,6 +18,9 @@ import recordbase.utils.Storage;
  * and loading and saving the task list.</p>
  */
 public class Record {
+    /** The product name shown consistently in the command-line and graphical interfaces. */
+    public static final String APP_NAME = "Record";
+
     private static RecordList list;
 
     /**
@@ -36,7 +39,7 @@ public class Record {
         System.out.println(""); // Empty line for banner spacing
 
         StringBuilder response = new StringBuilder();
-        response.append("Hello. You've connected to the Record service. How may I help.\n");
+        response.append("Record is on the turntable. What shall we put on the record?\n");
         response.append(separator);
 
         System.out.println(response);
@@ -51,7 +54,7 @@ public class Record {
         String separator = "----------------------------------------\n";
 
         StringBuilder response = new StringBuilder();
-        response.append("We hope you've fully Record-ed down everything needed! Goodbye!\n");
+        response.append("That's the end of this side. Your tasks are safely on the record. See you next spin!\n");
         response.append(separator);
 
         System.out.println(response);
@@ -66,7 +69,7 @@ public class Record {
      * @return the acknowledgement message
      */
     public static String echoNoted(String notedItem) {
-        String response = String.format("> Noted. I've recorded down: %s", notedItem);
+        String response = String.format("On the record: %s", notedItem);
         System.out.println(response);
 
         return response;
@@ -76,7 +79,7 @@ public class Record {
      * Displays the message to ask for user to input more data.
      */
     public static void echoAskInput() {
-        String textAsk = "What else should I Record down?\n";
+        String textAsk = "What else shall we put on the record?\n";
         System.out.println(textAsk);
     }
 
@@ -98,7 +101,8 @@ public class Record {
             case TODO -> createToDo(command.arguments());
             case DEADLINE -> createDeadline(command.arguments());
             case EVENT -> createEvent(command.arguments());
-            case UNKNOWN -> throw new RecordException("Sorry! No such command available. Please try again.");
+            case UNKNOWN -> throw new RecordException(
+                    "That command skipped a groove. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
         };
 
     }
@@ -124,7 +128,7 @@ public class Record {
      */
     private static String parseListCommand(ParsedCommand command) {
         requireNoArguments(command);
-        return list == null ? "No items in list!" : list.toString();
+        return list == null ? "The record is quiet — no tasks yet." : list.toString();
     }
 
     /**
@@ -167,7 +171,7 @@ public class Record {
      */
     private static String deleteItem(String arguments) {
         String deletedItem = getOrCreateList().deleteItem(parseItemIndex(arguments));
-        return String.format("Success! Deleted: %s", deletedItem);
+        return String.format("Off the record: %s", deletedItem);
     }
 
     /**
@@ -298,13 +302,6 @@ public class Record {
         } catch (RecordException e) {
             System.out.println(e.getMessage());
         }
-    }
-
-    /**
-     * Generates a response for the user's chat message.
-     */
-    public String getResponse(String input) {
-        return "Record-ded: " + input;
     }
 
     /**

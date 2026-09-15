@@ -6,7 +6,7 @@
   <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
     <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="app-header">
       <padding><Insets bottom="12.0" left="16.0" right="16.0" top="12.0" /></padding>
-      <VBox spacing="1.0"><Label styleClass="app-title" text="Record" /><Label styleClass="app-subtitle" text="Your task companion" /></VBox>
+      <VBox spacing="2.0"><Label styleClass="app-title" text="RECORD" /><Label styleClass="app-subtitle" text="KEEP LIFE ON TRACK" /></VBox>
       <Region HBox.hgrow="ALWAYS" /><Label styleClass="avatar-label" text="My avatar" />
       <ChoiceBox fx:id="avatarChoice" onAction="#handleAvatarChoice" prefWidth="112.0" />
     </HBox>
@@ -16,7 +16,7 @@
     <HBox alignment="CENTER" spacing="8.0" styleClass="composer">
       <padding><Insets bottom="12.0" left="12.0" right="12.0" top="10.0" /></padding>
       <Button fx:id="listItemsBtn" mnemonicParsing="false" onAction="#handleButtonListItems" styleClass="secondary-button" text="List" />
-      <TextField fx:id="userInput" onAction="#handleSendUserInput" onKeyPressed="#handleUpDownKeyPress" promptText="Type a command…" HBox.hgrow="ALWAYS" />
+      <TextField fx:id="userInput" onAction="#handleSendUserInput" onKeyPressed="#handleUpDownKeyPress" promptText="What shall we put on the record?" HBox.hgrow="ALWAYS" />
       <Button fx:id="sendButton" defaultButton="true" mnemonicParsing="false" onAction="#handleSendUserInput" styleClass="send-button" text="Send" />
     </HBox>
   </VBox>

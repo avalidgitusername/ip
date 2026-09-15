@@ -173,13 +173,13 @@ public class MainWindowController extends AnchorPane {
         VBox taskList = new VBox(6);
         taskList.getStyleClass().add("task-list");
         taskList.setPadding(new Insets(12));
-        Label heading = new Label("Your tasks");
+        Label heading = new Label("On your record");
         heading.getStyleClass().add("task-list-title");
         taskList.getChildren().add(heading);
 
         List<ListItem> items = Record.getItems();
         if (items.isEmpty()) {
-            Label emptyState = new Label("Nothing here yet. Add a task when you're ready.");
+            Label emptyState = new Label("The record is quiet. Add a task when you're ready.");
             emptyState.getStyleClass().add("empty-state");
             taskList.getChildren().add(emptyState);
             return taskList;
