@@ -32,7 +32,7 @@ public class DialogBoxController extends HBox {
      * Creates a custom DialogBox view of a given string and an image.
      *
      * @param text the string for the image
-     * @param image the image object itself to display
+     * @param img image to display beside the text
      */
     public DialogBoxController(String text, Image img) {
         try {
@@ -64,6 +64,13 @@ public class DialogBoxController extends HBox {
         this.getChildren().setAll(childNodes);
     }
 
+    /**
+     * Creates a right-aligned dialog styled as a user message.
+     *
+     * @param text message text to display
+     * @param img selected user avatar
+     * @return configured user dialog
+     */
     public static DialogBoxController getUserDialog(String text, Image img) {
         assert text != null : "User dialog text must not be null";
         assert img != null : "User dialog image must not be null";
@@ -73,6 +80,13 @@ public class DialogBoxController extends HBox {
         return dialogBox;
     }
 
+    /**
+     * Creates a left-aligned dialog styled as a response from Record.
+     *
+     * @param text response text to display
+     * @param img Record's profile image
+     * @return configured Record dialog
+     */
     public static DialogBoxController getRecordDialog(String text, Image img) {
         assert text != null : "Record dialog text must not be null";
         assert img != null : "Record dialog image must not be null";

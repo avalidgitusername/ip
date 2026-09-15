@@ -4,14 +4,17 @@ package recordbase.types;
  * Represents a generic task item in the Record application.
  */
 public abstract class ListItem {
+    /** Description supplied when the task was created. */
     protected final String taskDesc;
+    /** Priority used to communicate the task's urgency. */
     protected final Priority priority;
+    /** Whether the task is currently marked as completed. */
     protected boolean isDone = false;
 
     /**
      * Creates a {@code ListItem} with the specified task description.
      *
-     * @param task the description of the item
+     * @param taskDesc the description of the item
      */
     public ListItem(String taskDesc) {
         this(taskDesc, Priority.MEDIUM);
@@ -40,12 +43,20 @@ public abstract class ListItem {
         return priority;
     }
 
-    /** Returns the user-provided description of this task. */
+    /**
+     * Returns the user-provided description of this task.
+     *
+     * @return task description exactly as retained by the model
+     */
     public String getTaskDescription() {
         return taskDesc;
     }
 
-    /** Returns whether this task is currently completed. */
+    /**
+     * Reports whether this task is currently marked as completed.
+     *
+     * @return {@code true} when completed; otherwise {@code false}
+     */
     public boolean isDone() {
         return isDone;
     }

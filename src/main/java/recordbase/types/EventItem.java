@@ -16,11 +16,10 @@ public class EventItem extends ListItem {
     /**
      * Constructs a {@code EventItem} with the specified task description, start date and time, end date and time.
      *
-     * @param task the description of the task
+     * @param taskDesc the description of the task
      * @param fromDate the date and time when the event starts
      * @param toDate the date and time when the event ends
      */
-
     public EventItem(String taskDesc, LocalDateTime fromDate, LocalDateTime toDate) {
         this(taskDesc, fromDate, toDate, Priority.MEDIUM);
     }

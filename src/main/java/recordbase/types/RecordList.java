@@ -13,9 +13,17 @@ import recordbase.exceptions.RecordException;
  */
 
 public class RecordList {
-    /** A deliberately conservative bound that keeps task data far below one gigabyte. */
+    /**
+     * Maximum number of tasks retained in one list.
+     *
+     * <p>The conservative bound prevents unbounded list growth and excessive memory use.</p>
+     */
     public static final int MAX_ITEMS = 100_000;
-    /** Prevents a single pasted command from retaining an excessive amount of memory. */
+    /**
+     * Maximum number of characters retained in one task description.
+     *
+     * <p>This prevents a single pasted value from consuming excessive memory.</p>
+     */
     public static final int MAX_DESCRIPTION_LENGTH = 10_000;
     private final ArrayList<ListItem> listItems;
 
@@ -81,6 +89,13 @@ public class RecordList {
 
     /**
      * Adds an event with the specified priority.
+     *
+     * @param task the description of the task
+     * @param fromDate the date and time when the event starts
+     * @param toDate the date and time when the event ends
+     * @param priority task priority
+     * @return zero-based index of the newly added event
+     * @throws RecordException if a configured task or description limit is exceeded
      */
     public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate, Priority priority) {
         return addItem(new EventItem(task, fromDate, toDate, priority));
@@ -98,6 +113,12 @@ public class RecordList {
 
     /**
      * Adds a deadline with the specified priority.
+     *
+     * @param task the description of the task
+     * @param byDate the date and time by which the task should be completed
+     * @param priority task priority
+     * @return zero-based index of the newly added deadline
+     * @throws RecordException if a configured task or description limit is exceeded
      */
     public int addDeadlineItem(String task, LocalDateTime byDate, Priority priority) {
         return addItem(new DeadlineItem(task, byDate, priority));
@@ -114,17 +135,35 @@ public class RecordList {
 
     /**
      * Adds a to-do task with the specified priority.
+     *
+     * @param task the description of the task
+     * @param priority task priority
+     * @return zero-based index of the newly added to-do
+     * @throws RecordException if a configured task or description limit is exceeded
      */
     public int addToDoItem(String task, Priority priority) {
         return addItem(new ToDoItem(task, priority));
     }
 
-    /** Adds a scheduled to-do task with the specified priority. */
+    /**
+     * Adds a scheduled to-do task with the specified priority.
+     *
+     * @param task task description
+     * @param scheduledDate planned date and time
+     * @param priority task priority
+     * @return zero-based index of the added task
+     * @throws RecordException if a configured task or description limit is exceeded
+     */
     public int addToDoItem(String task, LocalDateTime scheduledDate, Priority priority) {
         return addItem(new ToDoItem(task, scheduledDate, priority));
     }
 
-    /** Validates bounds before retaining user-controlled text in memory. */
+    /**
+     * Validates list and description bounds before retaining user-controlled text.
+     *
+     * @param description description about to be retained
+     * @throws RecordException if the description or list has reached its limit
+     */
     private void ensureCapacityFor(String description) {
         if (description.length() > MAX_DESCRIPTION_LENGTH) {
             throw new RecordException("Task descriptions cannot exceed "
@@ -194,8 +233,9 @@ public class RecordList {
 
     /**
      * Searches the description of all tasks in the current list for a specific string.
-     * @param searchStr
-     * @return An ArrayList of all matching ListItems
+     *
+     * @param searchStr case-insensitive text to find in rendered task descriptions
+     * @return mutable list containing every matching task in display order
      */
     public ArrayList<ListItem> searchItems(String searchStr) {
         assert searchStr != null : "Search term must not be null";

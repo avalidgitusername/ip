@@ -33,6 +33,14 @@ public class Storage {
     private static final String CLOSING_QUOTE = "'";
 
     /**
+     * Creates a storage utility instance.
+     *
+     * <p>Persistence methods are static. This constructor preserves the class's original public
+     * construction contract.</p>
+     */
+    public Storage() { }
+
+    /**
      * Saves all items in the specified list to a file.
      *
      * @param list the list whose items are saved
@@ -165,6 +173,10 @@ public class Storage {
     /**
      * Parses the priority stored after the completion flag.
      * Legacy records without a priority are treated as medium priority.
+     *
+     * @param line the line containing the priority of the item
+     * @return the {@code Priority} represented by the line
+     * @throws RecordException if the priority could not be extracted
      */
     private static Priority parsePriority(String line) {
         String remainder = line.substring(6);
@@ -249,7 +261,16 @@ public class Storage {
         return fields;
     }
 
-    /** Resolves relative paths consistently against the application's current working directory. */
+    /**
+     * Resolves and normalizes a storage path.
+     *
+     * <p>Relative paths are resolved against the application's current working directory.
+     * Normalization also handles current-folder and parent-folder path segments.</p>
+     *
+     * @param fileName user-supplied absolute or relative path
+     * @return normalized absolute path
+     * @throws RecordException if the path is blank or cannot be parsed
+     */
     private static Path resolvePath(String fileName) {
         if (fileName.isBlank()) {
             throw new RecordException("Please provide a file path.");

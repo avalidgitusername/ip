@@ -12,7 +12,7 @@ public class ToDoItem extends ListItem {
     /**
      * Constructs a {@code ToDoItem} with the specified task description.
      *
-     * @param task the description of the task
+     * @param taskDesc the description of the task
      */
     public ToDoItem(String taskDesc) {
         this(taskDesc, Priority.MEDIUM);

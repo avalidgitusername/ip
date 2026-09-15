@@ -9,10 +9,15 @@ import recordbase.exceptions.RecordException;
  * Represents a task's urgency, where a smaller numeric level is more urgent.
  */
 public enum Priority {
+    /** Highest urgency, represented by level 1. */
     HIGH("High", 1),
+    /** Above-medium urgency, represented by level 2. */
     MEDIUM_HIGH("Medium-High", 2),
+    /** Default urgency, represented by level 3. */
     MEDIUM("Medium", 3),
+    /** Below-medium urgency, represented by level 4. */
     LOW_MEDIUM("Low-Medium", 4),
+    /** Lowest urgency, represented by level 5. */
     LOW("Low", 5);
 
     private final String displayName;

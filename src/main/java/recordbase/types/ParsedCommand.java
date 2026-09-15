@@ -8,9 +8,9 @@ package recordbase.types;
  */
 public record ParsedCommand(CommandType type, String arguments) {
     /**
-     * Returns whether arguments were supplied provided.
+     * Reports whether any non-blank arguments followed the command word.
      *
-     * @return true if the command has non-blank arguments
+     * @return {@code true} if the command has non-blank arguments
      */
     public boolean hasArguments() {
         return !arguments.isBlank();

@@ -18,7 +18,13 @@ import recordbase.exceptions.RecordException;
 import recordbase.types.Priority;
 import recordbase.types.RecordList;
 
-/** Parses task commands and their slash-prefixed options. */
+/**
+ * Parses task-creation commands and their slash-prefixed options.
+ *
+ * <p>The parser validates required options, duplicate options, priorities, calendar dates,
+ * times, and event ranges before adding an item to the supplied {@link RecordList}. Event
+ * options may occur in any order.</p>
+ */
 public class ListParser {
     private static final Pattern TODO_DATE_PATTERN = Pattern.compile(
             "^(?<description>.*\\S)\\s+(?<date>\\d{8})(?:\\s+(?<time>\\d{2}:\\d{2}))?$"
@@ -28,10 +34,30 @@ public class ListParser {
     private static final DateTimeFormatter TIME_FORMATTER =
             DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.STRICT);
 
-    /** Holds a description and the options extracted from a command. */
+    /**
+     * Creates a parser utility instance.
+     *
+     * <p>Parsing methods are static. This constructor preserves the class's original public
+     * construction contract.</p>
+     */
+    public ListParser() { }
+
+    /**
+     * Holds the task description and option values extracted from a command.
+     *
+     * @param description free-text task description with options removed
+     * @param values option names mapped to their associated tokens
+     */
     private record ParsedOptions(String description, Map<String, List<String>> values) { }
 
-    /** Parses a to-do and adds it to the supplied list. */
+    /**
+     * Parses a to-do command and adds the resulting item to a list.
+     *
+     * @param command complete command beginning with {@code todo}
+     * @param list destination list
+     * @return zero-based index of the added item
+     * @throws RecordException if the description, schedule, or priority is invalid
+     */
     public static int parseToDo(String command, RecordList list) {
         assert command != null : "Command must not be null";
         assert list != null : "List must not be null";
@@ -45,7 +71,14 @@ public class ListParser {
         return list.addToDoItem(parsed.description(), parsePriority(parsed.values().get("priority")));
     }
 
-    /** Parses a deadline and adds it to the supplied list. */
+    /**
+     * Parses a deadline command and adds the resulting item to a list.
+     *
+     * @param command complete command containing a required {@code /by} option
+     * @param list destination list
+     * @return zero-based index of the added item
+     * @throws RecordException if a required value or supplied value is invalid
+     */
     public static int parseDeadline(String command, RecordList list) {
         assert command != null : "Command must not be null";
         assert list != null : "List must not be null";
@@ -55,7 +88,14 @@ public class ListParser {
                 parsePriority(parsed.values().get("priority")));
     }
 
-    /** Parses an event, accepting its options in any order, and adds it to the list. */
+    /**
+     * Parses an event command and adds the resulting item to a list.
+     *
+     * @param command complete command containing {@code /from} and {@code /to}
+     * @param list destination list
+     * @return zero-based index of the added item
+     * @throws RecordException if options are missing, duplicated, invalid, or out of order
+     */
     public static int parseEvent(String command, RecordList list) {
         assert command != null : "Command must not be null";
         assert list != null : "List must not be null";
@@ -69,7 +109,15 @@ public class ListParser {
                 parsePriority(parsed.values().get("priority")));
     }
 
-    /** Separates free text from slash options, allowing options in any order. */
+    /**
+     * Separates description tokens from supported slash-prefixed options.
+     *
+     * @param command complete task-creation command
+     * @param commandName expected command keyword
+     * @param allowedOptions option names accepted for this command type
+     * @return extracted description and option values
+     * @throws RecordException if the command, description, or option structure is invalid
+     */
     private static ParsedOptions parseOptions(String command, String commandName, Set<String> allowedOptions) {
         String trimmed = command.trim();
         if (!trimmed.equals(commandName) && !trimmed.startsWith(commandName + " ")) {
@@ -113,7 +161,14 @@ public class ListParser {
         return new ParsedOptions(description, optionValues);
     }
 
-    /** Parses a required date option in {@code yyyymmdd [hh:mm]} format. */
+    /**
+     * Parses a required date option in {@code yyyymmdd [hh:mm]} format.
+     *
+     * @param options parsed options from the command
+     * @param name option name without its slash prefix
+     * @return parsed date and time, using midnight when time is omitted
+     * @throws RecordException if the option is absent or incorrectly formatted
+     */
     private static LocalDateTime parseRequiredDateTime(Map<String, List<String>> options, String name) {
         List<String> values = options.get(name);
         if (values == null) {
@@ -129,7 +184,14 @@ public class ListParser {
         return parseDateTime(values.get(0), values.size() == 2 ? values.get(1) : null);
     }
 
-    /** Converts a validated compact date and optional time into a date-time value. */
+    /**
+     * Converts compact date and time text into a strictly validated value.
+     *
+     * @param dateText date in {@code yyyymmdd} format
+     * @param timeText time in {@code hh:mm} format, or {@code null} for midnight
+     * @return combined local date and time
+     * @throws RecordException if either value is not a real calendar value
+     */
     private static LocalDateTime parseDateTime(String dateText, String timeText) {
         try {
             LocalDate date = LocalDate.parse(dateText, DATE_FORMATTER);
@@ -141,7 +203,13 @@ public class ListParser {
         }
     }
 
-    /** Parses an optional one-value priority, defaulting to medium. */
+    /**
+     * Parses an optional priority and applies the default when it is absent.
+     *
+     * @param values priority tokens, or {@code null} if no priority was supplied
+     * @return parsed priority, defaulting to {@link Priority#MEDIUM}
+     * @throws RecordException if the option does not contain exactly one valid value
+     */
     private static Priority parsePriority(List<String> values) {
         if (values == null) {
             return Priority.MEDIUM;

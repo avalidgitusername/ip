@@ -7,14 +7,23 @@ import java.util.Locale;
  * Represents a command supported by the Record application.
  */
 public enum CommandType {
+    /** Exits Record after saving tasks. */
     BYE("bye"),
+    /** Displays all tasks. */
     LIST("list"),
+    /** Marks a numbered task as completed. */
     MARK("mark"),
+    /** Marks a numbered task as incomplete. */
     UNMARK("unmark"),
+    /** Removes a numbered task. */
     DELETE("delete"),
+    /** Creates a to-do task. */
     TODO("todo"),
+    /** Creates a task with a deadline. */
     DEADLINE("deadline"),
+    /** Creates an event with a start and end. */
     EVENT("event"),
+    /** Represents an unrecognised command word. */
     UNKNOWN("");
 
     private final String commandWord;
