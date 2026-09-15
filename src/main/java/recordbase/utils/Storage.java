@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import recordbase.exceptions.RecordException;
 import recordbase.types.DeadlineItem;
@@ -22,12 +24,21 @@ import recordbase.types.ToDoItem;
  * <p>The class handles conversion between list items and their file-based representation.</p>
  */
 public class Storage {
+    private static final long MAX_SAVE_FILE_BYTES = 256L * 1024 * 1024;
     private static final int ITEM_TYPE_INDEX = 0;
     private static final int COMPLETION_STATUS_INDEX = 3;
     private static final char COMPLETED_STATUS = '1';
     private static final String QUOTED_FIELD_PREFIX = ", '";
     private static final String QUOTED_FIELD_SEPARATOR = "', ";
     private static final String CLOSING_QUOTE = "'";
+
+    /**
+     * Creates a storage utility instance.
+     *
+     * <p>Persistence methods are static. This constructor preserves the class's original public
+     * construction contract.</p>
+     */
+    public Storage() { }
 
     /**
      * Saves all items in the specified list to a file.
@@ -40,7 +51,7 @@ public class Storage {
         assert list != null : "List must not be null";
         assert fileName != null : "File name must not be null";
 
-        Path path = Paths.get(fileName);
+        Path path = resolvePath(fileName);
         Path parentDirectory = path.getParent();
 
         try {
@@ -57,8 +68,9 @@ public class Storage {
                 }
                 writer.flush();
             }
-        } catch (IOException e) {
-            throw new RecordException("Unable to save list to file.");
+        } catch (IOException | SecurityException e) {
+            throw new RecordException("Unable to save the task list to " + path
+                    + ". Check that the location is writable.", e);
         }
     }
 
@@ -73,25 +85,48 @@ public class Storage {
         assert list != null : "List must not be null";
         assert fileName != null : "File name must not be null";
 
-        Path path = Paths.get(fileName);
+        Path path = resolvePath(fileName);
 
         if (Files.notExists(path)) {
             throw new RecordException("No save file to load from.");
         }
 
+        try {
+            if (!Files.isRegularFile(path) || !Files.isReadable(path)) {
+                throw new RecordException("The save path is not a readable file: " + path);
+            }
+            if (Files.size(path) > MAX_SAVE_FILE_BYTES) {
+                throw new RecordException("The save file is too large to load safely (maximum 256 MB).");
+            }
+        } catch (IOException | SecurityException exception) {
+            throw new RecordException("Unable to inspect the save file. Check its permissions.", exception);
+        }
+
+        List<ListItem> loadedItems = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line;
+            int lineNumber = 0;
 
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
                 if (!line.isBlank()) {
-                    assert line != null : "Saved line must not be null";
-
-                    ListItem item = parseItem(line);
-                    list.addItem(item);
+                    if (loadedItems.size() >= RecordList.MAX_ITEMS) {
+                        throw new RecordException("The save file contains more than "
+                                + RecordList.MAX_ITEMS + " tasks. No tasks were loaded.");
+                    }
+                    try {
+                        loadedItems.add(parseItem(line));
+                    } catch (RuntimeException exception) {
+                        throw new RecordException("The save file is corrupted or uses an unsupported format"
+                                + " at line " + lineNumber + ". No tasks were loaded.", exception);
+                    }
                 }
             }
-        } catch (IOException | RuntimeException e) {
-            throw new RecordException("Unable to load list from file.", e);
+            for (ListItem item : loadedItems) {
+                list.addItem(item);
+            }
+        } catch (IOException | SecurityException e) {
+            throw new RecordException("Unable to read the save file. Check its permissions.", e);
         }
 
     }
@@ -104,6 +139,9 @@ public class Storage {
      * @throws RecordException if the line contains an unknown item type
      */
     private static ListItem parseItem(String line) {
+        if (!line.matches("^[TDE], [01], (?:[1-5], )?'.*'$")) {
+            throw new RecordException("Malformed saved item.");
+        }
         char itemType = line.charAt(ITEM_TYPE_INDEX);
         boolean isDone = line.charAt(COMPLETION_STATUS_INDEX) == COMPLETED_STATUS;
         Priority priority = parsePriority(line);
@@ -135,6 +173,10 @@ public class Storage {
     /**
      * Parses the priority stored after the completion flag.
      * Legacy records without a priority are treated as medium priority.
+     *
+     * @param line the line containing the priority of the item
+     * @return the {@code Priority} represented by the line
+     * @throws RecordException if the priority could not be extracted
      */
     private static Priority parsePriority(String line) {
         String remainder = line.substring(6);
@@ -208,10 +250,35 @@ public class Storage {
                     ? line.lastIndexOf(CLOSING_QUOTE)
                     : line.indexOf(QUOTED_FIELD_SEPARATOR, fieldStart);
 
+            if (fieldStart < QUOTED_FIELD_PREFIX.length() || fieldEnd < fieldStart) {
+                throw new RecordException("Saved item has missing or malformed fields.");
+            }
+
             fields[fieldIndex] = line.substring(fieldStart, fieldEnd);
             searchStart = fieldEnd;
         }
 
         return fields;
+    }
+
+    /**
+     * Resolves and normalizes a storage path.
+     *
+     * <p>Relative paths are resolved against the application's current working directory.
+     * Normalization also handles current-folder and parent-folder path segments.</p>
+     *
+     * @param fileName user-supplied absolute or relative path
+     * @return normalized absolute path
+     * @throws RecordException if the path is blank or cannot be parsed
+     */
+    private static Path resolvePath(String fileName) {
+        if (fileName.isBlank()) {
+            throw new RecordException("Please provide a file path.");
+        }
+        try {
+            return Paths.get(fileName).toAbsolutePath().normalize();
+        } catch (RuntimeException exception) {
+            throw new RecordException("The file path is invalid.", exception);
+        }
     }
 }

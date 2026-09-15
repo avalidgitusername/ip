@@ -95,6 +95,15 @@ public class ListTest {
     }
 
     @Test
+    void addToDoItem_excessivelyLongDescription_rejected() {
+        RecordList list = new RecordList();
+        String description = "x".repeat(RecordList.MAX_DESCRIPTION_LENGTH + 1);
+
+        assertThrows(RecordException.class, () -> list.addToDoItem(description));
+        assertTrue(list.getItems().isEmpty());
+    }
+
+    @Test
     void addToDoItem_addsToDoItemAndReturnsIndex() {
         RecordList list = new RecordList();
 

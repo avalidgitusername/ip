@@ -8,6 +8,7 @@ import recordbase.types.ParsedCommand;
  * Parses raw user input input into a command type and its arguments.
  */
 public final class CommandParser {
+    private static final int MAX_COMMAND_LENGTH = 10_100;
 
     private CommandParser() {
         // Prevents instantiation of this utility class.
@@ -26,6 +27,10 @@ public final class CommandParser {
     public static ParsedCommand parse(String input) {
         if (input == null || input.isBlank()) {
             throw new RecordException("Please enter a command.");
+        }
+        if (input.length() > MAX_COMMAND_LENGTH) {
+            throw new RecordException("That command is too long. Keep it under "
+                    + MAX_COMMAND_LENGTH + " characters.");
         }
 
         String trimmedInput = input.strip();

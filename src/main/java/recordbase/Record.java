@@ -18,13 +18,24 @@ import recordbase.utils.Storage;
  * and loading and saving the task list.</p>
  */
 public class Record {
-    /** The product name shown consistently in the command-line and graphical interfaces. */
+    /**
+     * Product name displayed by the command-line and graphical interfaces.
+     */
     public static final String APP_NAME = "Record";
 
     private static RecordList list;
 
     /**
+     * Creates a Record command processor.
+     *
+     * <p>Application state is shared by the command-line and graphical entry points.</p>
+     */
+    public Record() { }
+
+    /**
      * Displays the greeting banner and introductory message for the Record service.
+     *
+     * @return greeting text shown to the user
      */
     public static String greet() {
         String separator = "----------------------------------------\n";
@@ -49,6 +60,8 @@ public class Record {
 
     /**
      * Displays the goodbye message when exiting the Record service.
+     *
+     * @return farewell text shown to the user
      */
     public static String goodbye() {
         String separator = "----------------------------------------\n";
@@ -63,7 +76,7 @@ public class Record {
     }
 
     /**
-     * Prints and returns a message acknowledging the specifiec string has been recorded.
+     * Prints and returns a message acknowledging the specific string has been recorded.
      *
      * @param notedItem the item description to display in the confirmation message
      * @return the acknowledgement message
@@ -234,12 +247,22 @@ public class Record {
         return list;
     }
 
-    /** Returns a read-only snapshot of the tasks for graphical list rendering. */
+    /**
+     * Returns a read-only snapshot of the current tasks for graphical rendering.
+     *
+     * @return immutable snapshot in the current display order
+     */
     public static List<ListItem> getItems() {
         return getOrCreateList().getItems();
     }
 
-    /** Updates a task selected in the graphical list using its zero-based position. */
+    /**
+     * Updates the completion state of a task selected in the graphical list.
+     *
+     * @param index zero-based position of the task
+     * @param isDone {@code true} to mark the task complete, or {@code false} to reopen it
+     * @throws RecordException if the index does not identify an existing task
+     */
     public static void setItemCompletion(int index, boolean isDone) {
         if (isDone) {
             getOrCreateList().setListItemDone(index);
@@ -296,11 +319,15 @@ public class Record {
      * @param strPath the path of the file from which to load the list
      */
     public static void retrieveList(String strPath) {
-        Record.list = new RecordList();
+        RecordList loadedList = new RecordList();
         try {
-            Storage.loadFromFile(Record.list, strPath);
+            Storage.loadFromFile(loadedList, strPath);
+            Record.list = loadedList;
         } catch (RecordException e) {
             System.out.println(e.getMessage());
+            if (Record.list == null) {
+                Record.list = new RecordList();
+            }
         }
     }
 

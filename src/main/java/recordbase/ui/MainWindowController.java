@@ -26,6 +26,7 @@ import recordbase.types.ListItem;
  */
 public class MainWindowController extends AnchorPane {
     private static final int MAX_TRANSCRIPT_NODES = 80;
+    private static final int MAX_COMMAND_HISTORY = 100;
     private static final double NEAR_BOTTOM_THRESHOLD = 0.98;
     @FXML
     private ScrollPane scrollPane;
@@ -45,6 +46,11 @@ public class MainWindowController extends AnchorPane {
 
     private Image userImage;
     private final Image recordProfileImage = loadImage("/images/RecordAvatar.png");
+
+    /**
+     * Creates the controller instantiated by the main FXML document.
+     */
+    public MainWindowController() { }
 
     /**
      * Initializes the controller for the main ui of Record Application.
@@ -133,7 +139,11 @@ public class MainWindowController extends AnchorPane {
         showTaskList(true);
     }
 
-    /** Shows one task panel, reusing it while the task data is unchanged. */
+    /**
+     * Shows the task panel and reuses its controls while task data remains unchanged.
+     *
+     * @param shouldFollowOutput whether the conversation should scroll to the panel
+     */
     private void showTaskList(boolean shouldFollowOutput) {
         String currentSnapshot = Record.getItems().toString();
         if (taskListPane != null && dialogContainer.getChildren().contains(taskListPane)
@@ -168,7 +178,14 @@ public class MainWindowController extends AnchorPane {
         taskListSnapshot = currentSnapshot;
     }
 
-    /** Creates an interactive task list whose checkboxes mark and unmark the selected rows. */
+    /**
+     * Creates an interactive representation of the current task list.
+     *
+     * <p>Each task receives a checkbox that immediately updates the corresponding model item.
+     * An explanatory empty state is returned when the list contains no tasks.</p>
+     *
+     * @return newly constructed task-list pane
+     */
     private VBox createTaskListPane() {
         VBox taskList = new VBox(6);
         taskList.getStyleClass().add("task-list");
@@ -206,16 +223,28 @@ public class MainWindowController extends AnchorPane {
         return taskList;
     }
 
-    /** Stores a command for Up/Down navigation without retaining consecutive duplicates. */
+    /**
+     * Stores a command for keyboard history navigation.
+     *
+     * <p>Consecutive duplicates are ignored and the oldest entry is discarded when the
+     * configured history limit is exceeded.</p>
+     *
+     * @param input command to retain
+     */
     private void rememberCommand(String input) {
         if (commandHistory.isEmpty()
                 || !input.equalsIgnoreCase(commandHistory.get(commandHistory.size() - 1))) {
             commandHistory.add(input);
+            if (commandHistory.size() > MAX_COMMAND_HISTORY) {
+                commandHistory.remove(0);
+            }
         }
         commandHistoryIndex = commandHistory.size();
     }
 
-    /** Clears only rendered conversation content; saved tasks and command history remain intact. */
+    /**
+     * Clears rendered conversation content without changing tasks or command history.
+     */
     private void clearTranscript() {
         dialogContainer.getChildren().clear();
         taskListPane = null;
@@ -224,7 +253,9 @@ public class MainWindowController extends AnchorPane {
         userInput.requestFocus();
     }
 
-    /** Removes the currently rendered task panel, if one exists. */
+    /**
+     * Removes the currently rendered task panel and invalidates its cached snapshot.
+     */
     private void removeTaskListPane() {
         if (taskListPane != null) {
             dialogContainer.getChildren().remove(taskListPane);
@@ -233,7 +264,12 @@ public class MainWindowController extends AnchorPane {
         }
     }
 
-    /** Adds output, bounds retained nodes, and follows the bottom only when appropriate. */
+    /**
+     * Adds nodes to the transcript while enforcing its configured display limit.
+     *
+     * @param shouldFollowOutput whether to scroll to the newest output after layout
+     * @param nodes nodes to append in display order
+     */
     private void addTranscriptNodes(boolean shouldFollowOutput, javafx.scene.Node... nodes) {
         dialogContainer.getChildren().addAll(nodes);
         while (dialogContainer.getChildren().size() > MAX_TRANSCRIPT_NODES) {
@@ -262,7 +298,11 @@ public class MainWindowController extends AnchorPane {
         });
     }
 
-    /** Returns whether the reader is already following the newest conversation output. */
+    /**
+     * Reports whether the viewport is already following the newest output.
+     *
+     * @return {@code true} if all content fits or the viewport is near the bottom
+     */
     private boolean isNearBottom() {
         boolean contentFitsWithoutScrolling = dialogContainer.getHeight()
                 <= scrollPane.getViewportBounds().getHeight() + 1;
@@ -323,14 +363,21 @@ public class MainWindowController extends AnchorPane {
         }
     }
 
-    /** Updates subsequent user messages to use the avatar selected in the header. */
+    /**
+     * Applies the selected avatar to subsequent user messages and restores input focus.
+     */
     @FXML
     private void handleAvatarChoice() {
         updateUserImage();
         userInput.requestFocus();
     }
 
-    /** Loads the selected built-in avatar at its original resolution for smooth DPI-aware scaling. */
+    /**
+     * Loads the selected built-in avatar at its original resolution.
+     *
+     * <p>Retaining the source resolution allows JavaFX to scale the image smoothly on displays
+     * with different pixel densities.</p>
+     */
     private void updateUserImage() {
         String path = avatarChoice.getSelectionModel().getSelectedIndex() == 1
                 ? "/images/SmallLogo.png"

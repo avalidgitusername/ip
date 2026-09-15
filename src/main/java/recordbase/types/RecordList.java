@@ -13,6 +13,18 @@ import recordbase.exceptions.RecordException;
  */
 
 public class RecordList {
+    /**
+     * Maximum number of tasks retained in one list.
+     *
+     * <p>The conservative bound prevents unbounded list growth and excessive memory use.</p>
+     */
+    public static final int MAX_ITEMS = 100_000;
+    /**
+     * Maximum number of characters retained in one task description.
+     *
+     * <p>This prevents a single pasted value from consuming excessive memory.</p>
+     */
+    public static final int MAX_DESCRIPTION_LENGTH = 10_000;
     private final ArrayList<ListItem> listItems;
 
     /**
@@ -41,6 +53,7 @@ public class RecordList {
     public int addItem(ListItem item) {
         assert item != null : "List item must not be null";
 
+        ensureCapacityFor(item.getTaskDescription());
         this.listItems.add(item);
         return this.listItems.size() - 1;
     }
@@ -76,10 +89,16 @@ public class RecordList {
 
     /**
      * Adds an event with the specified priority.
+     *
+     * @param task the description of the task
+     * @param fromDate the date and time when the event starts
+     * @param toDate the date and time when the event ends
+     * @param priority task priority
+     * @return zero-based index of the newly added event
+     * @throws RecordException if a configured task or description limit is exceeded
      */
     public int addEventItem(String task, LocalDateTime fromDate, LocalDateTime toDate, Priority priority) {
-        this.listItems.add(new EventItem(task, fromDate, toDate, priority));
-        return this.listItems.size() - 1;
+        return addItem(new EventItem(task, fromDate, toDate, priority));
     }
     /**
      * Adds an {@code DeadlineItem} with the specified task description and deadline to end of the list.
@@ -94,10 +113,15 @@ public class RecordList {
 
     /**
      * Adds a deadline with the specified priority.
+     *
+     * @param task the description of the task
+     * @param byDate the date and time by which the task should be completed
+     * @param priority task priority
+     * @return zero-based index of the newly added deadline
+     * @throws RecordException if a configured task or description limit is exceeded
      */
     public int addDeadlineItem(String task, LocalDateTime byDate, Priority priority) {
-        this.listItems.add(new DeadlineItem(task, byDate, priority));
-        return this.listItems.size() - 1;
+        return addItem(new DeadlineItem(task, byDate, priority));
     }
     /**
      * Adds an {@code ToDoItem} with the specified task description to end of the list.
@@ -111,16 +135,44 @@ public class RecordList {
 
     /**
      * Adds a to-do task with the specified priority.
+     *
+     * @param task the description of the task
+     * @param priority task priority
+     * @return zero-based index of the newly added to-do
+     * @throws RecordException if a configured task or description limit is exceeded
      */
     public int addToDoItem(String task, Priority priority) {
-        this.listItems.add(new ToDoItem(task, priority));
-        return this.listItems.size() - 1;
+        return addItem(new ToDoItem(task, priority));
     }
 
-    /** Adds a scheduled to-do task with the specified priority. */
+    /**
+     * Adds a scheduled to-do task with the specified priority.
+     *
+     * @param task task description
+     * @param scheduledDate planned date and time
+     * @param priority task priority
+     * @return zero-based index of the added task
+     * @throws RecordException if a configured task or description limit is exceeded
+     */
     public int addToDoItem(String task, LocalDateTime scheduledDate, Priority priority) {
-        this.listItems.add(new ToDoItem(task, scheduledDate, priority));
-        return this.listItems.size() - 1;
+        return addItem(new ToDoItem(task, scheduledDate, priority));
+    }
+
+    /**
+     * Validates list and description bounds before retaining user-controlled text.
+     *
+     * @param description description about to be retained
+     * @throws RecordException if the description or list has reached its limit
+     */
+    private void ensureCapacityFor(String description) {
+        if (description.length() > MAX_DESCRIPTION_LENGTH) {
+            throw new RecordException("Task descriptions cannot exceed "
+                    + MAX_DESCRIPTION_LENGTH + " characters.");
+        }
+        if (listItems.size() >= MAX_ITEMS) {
+            throw new RecordException("The task limit of " + MAX_ITEMS
+                    + " has been reached. Delete an item before adding another.");
+        }
     }
 
     /**
@@ -181,8 +233,9 @@ public class RecordList {
 
     /**
      * Searches the description of all tasks in the current list for a specific string.
-     * @param searchStr
-     * @return An ArrayList of all matching ListItems
+     *
+     * @param searchStr case-insensitive text to find in rendered task descriptions
+     * @return mutable list containing every matching task in display order
      */
     public ArrayList<ListItem> searchItems(String searchStr) {
         assert searchStr != null : "Search term must not be null";

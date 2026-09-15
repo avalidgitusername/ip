@@ -13,15 +13,23 @@ import recordbase.Record;
 /**
  * JavaFX GUI for the Record application.
  *
- * <p>The interface follows a chatbot-style layout, with user input
- * appearing in the upper-right section and a text input area at
- * the bottom of the window.</p>
+ * <p>The class owns the JavaFX application lifecycle. It loads the main FXML layout,
+ * configures the primary window, and saves the task list when the window is closed.</p>
  */
 public class RecordGui extends Application {
     private static final String WINDOW_ICON_PATH = "/images/RecordAvatar.png";
 
     /**
-     * Starts the JavaFX application.P
+     * Creates the JavaFX application instance used by the platform launcher.
+     */
+    public RecordGui() { }
+
+    /**
+     * Creates and displays Record's primary window.
+     *
+     * <p>The method loads the FXML view and bundled icon, establishes the minimum window
+     * dimensions, and registers a close handler that persists the current task list.</p>
+     *
      * @param stage the primary stage
      */
     @Override
@@ -52,9 +60,12 @@ public class RecordGui extends Application {
     }
 
     /**
-     * Launches the JavaFX application.
+     * Launches Record directly through its {@code Application} subclass.
      *
-     * @param args command-line arguments
+     * <p>Packaged distributions normally use {@link Launcher}; this entry point remains
+     * useful to IDEs and other environments that already configure JavaFX correctly.</p>
+     *
+     * @param args command-line arguments forwarded to JavaFX
      */
     public static void main(String[] args) {
         launch(args);

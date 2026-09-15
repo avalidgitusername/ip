@@ -16,7 +16,7 @@ public class DeadlineItem extends ListItem {
     /**
      * Constructs a {@code DeadlineItem} with the specified task description and deadline.
      *
-     * @param task the description of the task
+     * @param taskDesc the description of the task
      * @param byDate the date and time which the task should be completed
      */
     public DeadlineItem(String taskDesc, LocalDateTime byDate) {
