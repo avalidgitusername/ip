@@ -58,7 +58,7 @@ public class RecordList {
             this.listItems.remove(index);
             return deletedItemDescription;
         } else {
-            throw new RecordException("ListError: No such index to delete.");
+            throw new RecordException("That track number is not on your list.");
         }
     }
 
@@ -117,6 +117,12 @@ public class RecordList {
         return this.listItems.size() - 1;
     }
 
+    /** Adds a scheduled to-do task with the specified priority. */
+    public int addToDoItem(String task, LocalDateTime scheduledDate, Priority priority) {
+        this.listItems.add(new ToDoItem(task, scheduledDate, priority));
+        return this.listItems.size() - 1;
+    }
+
     /**
      * Marks the item at the specified index as done.
      *
@@ -150,7 +156,7 @@ public class RecordList {
     private String updateCompletionStatus(int index, boolean shouldMarkAsDone) {
         if (index < 0 || index >= this.listItems.size()) {
             String action = shouldMarkAsDone ? "mark" : "unmark";
-            throw new RecordException(String.format("Error in %s: No such item on list.", action));
+            throw new RecordException(String.format("I can't %s that track — it is not on your list.", action));
         }
 
         ListItem item = this.listItems.get(index);
@@ -160,8 +166,8 @@ public class RecordList {
             item.setNotDone();
         }
 
-        String completionStatus = shouldMarkAsDone ? "done" : "not done";
-        return String.format("Nice...You've marked the item %s.%n%s%n", completionStatus, item);
+        String response = shouldMarkAsDone ? "That one's complete and back in its sleeve:" : "Back in rotation:";
+        return String.format("%s%n%s", response, item);
     }
 
     /**
@@ -208,7 +214,7 @@ public class RecordList {
 
             return sb.toString();
         } else {
-            return "No items in list!";
+            return "The record is quiet — no tasks yet.";
         }
     }
 }

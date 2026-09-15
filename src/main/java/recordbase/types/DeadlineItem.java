@@ -2,6 +2,8 @@ package recordbase.types;
 
 import java.time.LocalDateTime;
 
+import recordbase.utils.TimeDisplay;
+
 /**
  * Represents a task with a specified deadline.
  *
@@ -43,7 +45,8 @@ public class DeadlineItem extends ListItem {
 
         sb.append(super.toString());
 
-        String deadlineDescription = String.format(" (Due: %s)", this.byDate);
+        String deadlineDescription = String.format(" (Due: %s | %s)",
+                TimeDisplay.formatDateTime(this.byDate), TimeDisplay.formatDeadlineStatus(this.byDate));
         sb.append(deadlineDescription);
         return sb.toString();
     }

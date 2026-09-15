@@ -29,19 +29,17 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
 
-    String javaFxVersion = '17.0.7'
-    implementation("org.openjfx:javafx-base:${javaFxVersion}:win")
-    implementation("org.openjfx:javafx-base:${javaFxVersion}:mac")
-    implementation("org.openjfx:javafx-base:${javaFxVersion}:linux")
-    implementation("org.openjfx:javafx-controls:${javaFxVersion}:win")
-    implementation("org.openjfx:javafx-controls:${javaFxVersion}:mac")
-    implementation("org.openjfx:javafx-controls:${javaFxVersion}:linux")
-    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:win")
-    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:mac")
-    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:linux")
-    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:win")
-    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:mac")
-    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:linux")
+    String javaFxVersion = '25.0.2'
+    String osName = System.getProperty('os.name').toLowerCase()
+    String architecture = System.getProperty('os.arch').toLowerCase()
+    String javaFxPlatform = osName.contains('win') ? 'win' : osName.contains('mac') ? 'mac' : 'linux'
+    if (architecture.contains('aarch64') || architecture.contains('arm64')) {
+        javaFxPlatform += '-aarch64'
+    }
+    implementation("org.openjfx:javafx-base:${javaFxVersion}:${javaFxPlatform}")
+    implementation("org.openjfx:javafx-controls:${javaFxVersion}:${javaFxPlatform}")
+    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:${javaFxPlatform}")
+    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:${javaFxPlatform}")
 }
 
 test {
@@ -59,14 +57,16 @@ test {
 }
 
 application {
-    // mainClass = 'recordbase.Record'
+    mainModule = 'my.record.app'
     mainClass = 'recordbase.ui.Launcher'
+    // JavaFX calls native windowing code, which Java 25 requires applications to authorize explicitly.
+    applicationDefaultJvmArgs = ['--enable-native-access=javafx.graphics']
 }
 
 jar {
-    // A lean JAR file (i.e., without the dependencies packaged inside) is not needed.
-    enabled = false
-    // Rename its output anyway; Gradle forbids it clashing with the shadowJar output file, even for a disabled task.
+    // A modular launch uses this lean JAR; the separate shadow JAR remains available for distribution.
+    enabled = true
+    // Keep it distinct from the shadow JAR that packages the runtime dependencies.
     archiveClassifier = 'without-dependencies'
 }
 
@@ -89,6 +89,11 @@ checkstyle {
     // toolVersion = '11.0.0'
     toolVersion = '13.11.0' // Update to support Java 25 syntax. Else, assertions will cause build failures
     //toolVersion = '14.1.0' // Update to support Java 25 syntax. Else, assertions will cause build failures
+}
+
+// The course Checkstyle grammar does not parse Java module descriptors; javac still validates this file.
+tasks.named('checkstyleMain') {
+    exclude '**/module-info.java'
 }
 
 run {

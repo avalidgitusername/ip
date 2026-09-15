@@ -40,6 +40,16 @@ public abstract class ListItem {
         return priority;
     }
 
+    /** Returns the user-provided description of this task. */
+    public String getTaskDescription() {
+        return taskDesc;
+    }
+
+    /** Returns whether this task is currently completed. */
+    public boolean isDone() {
+        return isDone;
+    }
+
     /**
      * Marks the item as completed.
      */

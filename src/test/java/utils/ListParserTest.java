@@ -26,6 +26,7 @@ public class ListParserTest {
         int index = ListParser.parseToDo(command, list);
 
         assertTrue(index == 0);
+        assertTrue(list.getItem(index).toString().contains("Scheduled: 15 Jan 2026, 2:30 PM"));
     }
 
     @Test
@@ -35,6 +36,7 @@ public class ListParserTest {
         int index = ListParser.parseToDo(command, list);
 
         assertTrue(index == 0);
+        assertTrue(list.getItem(index).toString().contains("Scheduled: 15 Jan 2026, 12:00 AM"));
     }
 
     @Test
@@ -95,6 +97,16 @@ public class ListParserTest {
         String command = "todo";
 
         assertThrows(RecordException.class, () -> ListParser.parseToDo(command, list));
+    }
+
+    @Test
+    void parseToDo_onlyPriorityOption_exceptionThrown() {
+        assertThrows(RecordException.class, () -> ListParser.parseToDo("todo /priority 1", list));
+    }
+
+    @Test
+    void parseToDo_unknownOption_exceptionThrown() {
+        assertThrows(RecordException.class, () -> ListParser.parseToDo("todo Buy milk /where shops", list));
     }
 
     @Test
@@ -166,6 +178,16 @@ public class ListParserTest {
     }
 
     @Test
+    void parseEvent_optionsInDifferentOrder_itemAdded() {
+        String command = "event /to 20260116 /priority high Team meeting /from 20260115";
+
+        int index = ListParser.parseEvent(command, list);
+
+        assertTrue(index == 0);
+        assertTrue(list.getItem(index).getPriority() == Priority.HIGH);
+    }
+
+    @Test
     void parseEvent_validFromDateToDateTime_itemAdded() {
         String command = "event Video session /from 20260115 /to 20260115 10:30";
 
@@ -178,7 +200,7 @@ public class ListParserTest {
     void parseEvent_dateOnlyEndBeforeStart_exceptionThrown() {
         String command = "event Running session /from 20260115 09:00 /to 20260115";
 
-        assertThrows(AssertionError.class, () -> ListParser.parseEvent(command, list));
+        assertThrows(RecordException.class, () -> ListParser.parseEvent(command, list));
     }
 
     @Test
@@ -208,7 +230,7 @@ public class ListParserTest {
     void parseEvent_endBeforeStart_exceptionThrown() {
         String command = "event Team meeting /from 20260115 15:30 /to 20260115 14:30";
 
-        assertThrows(AssertionError.class, () -> ListParser.parseEvent(command, list));
+        assertThrows(RecordException.class, () -> ListParser.parseEvent(command, list));
     }
 
     @Test
