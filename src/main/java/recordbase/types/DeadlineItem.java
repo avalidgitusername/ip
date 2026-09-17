@@ -53,7 +53,7 @@ public class DeadlineItem extends ListItem {
 
     @Override
     public String saveString() {
-        return String.format("D, %s, %d, '%s', '%s'", this.isDone ? "1" : "0",
-                priority.getLevel(), this.taskDesc, this.byDate);
+        return String.format("D,%s,%d,%s,%s", this.isDone ? "1" : "0",
+                priority.getLevel(), toCsvField(this.taskDesc), this.byDate);
     }
 }

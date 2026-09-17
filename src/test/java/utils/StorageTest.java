@@ -47,7 +47,7 @@ public class StorageTest {
     @Test
     void loadFromFile_corruptedSecondLine_doesNotPartiallyLoad() throws Exception {
         Path saveFile = temporaryDirectory.resolve("tasks.txt");
-        Files.writeString(saveFile, "T, 0, 3, 'Valid task'\nnot valid\n");
+        Files.writeString(saveFile, "# Record save format v2\nT,0,3,\"Valid task\"\nnot valid\n");
         RecordList target = new RecordList();
         target.addToDoItem("Existing task");
 
@@ -55,5 +55,43 @@ public class StorageTest {
 
         assertEquals(1, target.getItems().size());
         assertTrue(target.getItem(0).toString().contains("Existing task"));
+    }
+
+    @Test
+    void saveAndLoad_descriptionWithCsvCharacters_preservesDescription() throws Exception {
+        RecordList original = new RecordList();
+        String description = "separator ', ' inside, called \"special\"";
+        original.addToDoItem(description);
+        Path saveFile = temporaryDirectory.resolve("tasks.txt");
+
+        Storage.saveToFile(original, saveFile.toString());
+
+        assertTrue(Files.readString(saveFile)
+                .contains("\"separator ', ' inside, called \"\"special\"\"\""));
+        RecordList restored = new RecordList();
+        Storage.loadFromFile(restored, saveFile.toString());
+        assertEquals(description, restored.getItem(0).getTaskDescription());
+    }
+
+    @Test
+    void loadFromFile_manuallyWrittenCsv_loadsItem() throws Exception {
+        Path saveFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(saveFile, "# Record save format v2\nD,0,1,\"Submit report, with appendix\","
+                + "2026-09-30T23:59\n");
+        RecordList restored = new RecordList();
+
+        Storage.loadFromFile(restored, saveFile.toString());
+
+        assertEquals("Submit report, with appendix", restored.getItem(0).getTaskDescription());
+        assertEquals(1, restored.getItems().size());
+    }
+
+    @Test
+    void loadFromFile_legacyFormat_rejected() throws Exception {
+        Path saveFile = temporaryDirectory.resolve("tasks.txt");
+        Files.writeString(saveFile, "T, 0, 3, 'Legacy task'\n");
+
+        assertThrows(RecordException.class, () ->
+                Storage.loadFromFile(new RecordList(), saveFile.toString()));
     }
 }

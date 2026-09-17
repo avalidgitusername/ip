@@ -25,12 +25,7 @@ import recordbase.types.ToDoItem;
  */
 public class Storage {
     private static final long MAX_SAVE_FILE_BYTES = 256L * 1024 * 1024;
-    private static final int ITEM_TYPE_INDEX = 0;
-    private static final int COMPLETION_STATUS_INDEX = 3;
-    private static final char COMPLETED_STATUS = '1';
-    private static final String QUOTED_FIELD_PREFIX = ", '";
-    private static final String QUOTED_FIELD_SEPARATOR = "', ";
-    private static final String CLOSING_QUOTE = "'";
+    private static final String FORMAT_HEADER = "# Record save format v2";
 
     /**
      * Creates a storage utility instance.
@@ -60,10 +55,12 @@ public class Storage {
             }
 
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+                writer.write(FORMAT_HEADER);
+                writer.newLine();
                 for (ListItem item : list.getItems()) {
                     assert item != null : "List must not contain null items";
 
-                    writer.write(item.saveString().replaceAll("\'", "\\\'"));
+                    writer.write(item.saveString());
                     writer.newLine();
                 }
                 writer.flush();
@@ -106,21 +103,35 @@ public class Storage {
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line;
             int lineNumber = 0;
+            boolean hasFormatHeader = false;
 
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if (!line.isBlank()) {
-                    if (loadedItems.size() >= RecordList.MAX_ITEMS) {
-                        throw new RecordException("The save file contains more than "
-                                + RecordList.MAX_ITEMS + " tasks. No tasks were loaded.");
+                if (lineNumber == 1) {
+                    hasFormatHeader = FORMAT_HEADER.equals(line);
+                    if (!hasFormatHeader) {
+                        throw new RecordException("The save file does not use the supported Record v2 format."
+                                + " No tasks were loaded.");
                     }
-                    try {
-                        loadedItems.add(parseItem(line));
-                    } catch (RuntimeException exception) {
-                        throw new RecordException("The save file is corrupted or uses an unsupported format"
-                                + " at line " + lineNumber + ". No tasks were loaded.", exception);
-                    }
+                    continue;
                 }
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+                if (loadedItems.size() >= RecordList.MAX_ITEMS) {
+                    throw new RecordException("The save file contains more than "
+                            + RecordList.MAX_ITEMS + " tasks. No tasks were loaded.");
+                }
+                try {
+                    loadedItems.add(parseItem(line));
+                } catch (RuntimeException exception) {
+                    throw new RecordException("The save file is corrupted or uses an unsupported format"
+                            + " at line " + lineNumber + ". No tasks were loaded.", exception);
+                }
+            }
+            if (!hasFormatHeader) {
+                throw new RecordException("The save file does not use the supported Record v2 format."
+                        + " No tasks were loaded.");
             }
             for (ListItem item : loadedItems) {
                 list.addItem(item);
@@ -139,29 +150,24 @@ public class Storage {
      * @throws RecordException if the line contains an unknown item type
      */
     private static ListItem parseItem(String line) {
-        if (!line.matches("^[TDE], [01], (?:[1-5], )?'.*'$")) {
-            throw new RecordException("Malformed saved item.");
+        List<String> fields = parseCsvLine(line);
+        if (fields.size() < 4) {
+            throw new RecordException("Saved item does not contain enough fields.");
         }
-        char itemType = line.charAt(ITEM_TYPE_INDEX);
-        boolean isDone = line.charAt(COMPLETION_STATUS_INDEX) == COMPLETED_STATUS;
-        Priority priority = parsePriority(line);
 
-        ListItem item;
-
-        switch (itemType) {
-            case 'T' -> {
-                item = parseToDoItem(line, priority);
-            }
-            case 'D' -> {
-                item = parseDeadlineItem(line, priority);
-            }
-            case 'E' -> {
-                item = parseEventItem(line, priority);
-            }
-            default -> {
-                throw new RecordException("Unknown item type: " + itemType);
-            }
+        boolean isDone = parseCompletionStatus(fields.get(1));
+        Priority priority = Priority.fromString(fields.get(2));
+        String description = fields.get(3);
+        if (description.isBlank()) {
+            throw new RecordException("Saved item has an empty description.");
         }
+
+        ListItem item = switch (fields.get(0)) {
+            case "T" -> parseToDoItem(fields, description, priority);
+            case "D" -> parseDeadlineItem(fields, description, priority);
+            case "E" -> parseEventItem(fields, description, priority);
+            default -> throw new RecordException("Unknown item type: " + fields.get(0));
+        };
 
         if (isDone) {
             item.setDone();
@@ -170,94 +176,110 @@ public class Storage {
         return item;
     }
 
-    /**
-     * Parses the priority stored after the completion flag.
-     * Legacy records without a priority are treated as medium priority.
-     *
-     * @param line the line containing the priority of the item
-     * @return the {@code Priority} represented by the line
-     * @throws RecordException if the priority could not be extracted
-     */
-    private static Priority parsePriority(String line) {
-        String remainder = line.substring(6);
-        if (remainder.startsWith("'")) {
-            return Priority.MEDIUM;
-        }
-        int separatorIndex = remainder.indexOf(',');
-        if (separatorIndex == -1) {
-            throw new RecordException("Saved item has no task description.");
-        }
-        return Priority.fromString(remainder.substring(0, separatorIndex));
+    private static boolean parseCompletionStatus(String value) {
+        return switch (value) {
+            case "0" -> false;
+            case "1" -> true;
+            default -> throw new RecordException("Completion status must be either 0 or 1.");
+        };
     }
 
     /**
      * Parses a saved to-do item from a line in the save file.
      *
-     * @param line the line representing the saved to-do item
+     * @param fields parsed CSV fields
+     * @param description task description
+     * @param priority task priority
      * @return the parsed {@code ToDoItem}
      */
-    private static ListItem parseToDoItem(String line, Priority priority) {
-        boolean hasScheduledDate = line.indexOf(QUOTED_FIELD_SEPARATOR) >= 0;
-        String[] fields = extractQuotedFields(line, hasScheduledDate ? 2 : 1);
-        return hasScheduledDate
-                ? new ToDoItem(fields[0], LocalDateTime.parse(fields[1]), priority)
-                : new ToDoItem(fields[0], priority);
+    private static ListItem parseToDoItem(List<String> fields, String description, Priority priority) {
+        return switch (fields.size()) {
+            case 4 -> new ToDoItem(description, priority);
+            case 5 -> new ToDoItem(description, LocalDateTime.parse(fields.get(4)), priority);
+            default -> throw new RecordException("To-do must contain four or five fields.");
+        };
     }
 
     /**
      * Parses a saved deadline item from a line in the save file.
      *
-     * @param line the line representing the saved deadline item
+     * @param fields parsed CSV fields
+     * @param description task description
+     * @param priority task priority
      * @return the parsed {@code DeadlineItem}
      */
-    private static ListItem parseDeadlineItem(String line, Priority priority) {
-        String[] fields = extractQuotedFields(line, 2);
-        String task = fields[0];
-        LocalDateTime deadline = LocalDateTime.parse(fields[1]);
-        return new DeadlineItem(task, deadline, priority);
+    private static ListItem parseDeadlineItem(List<String> fields, String description, Priority priority) {
+        if (fields.size() != 5) {
+            throw new RecordException("Deadline must contain five fields.");
+        }
+        return new DeadlineItem(description, LocalDateTime.parse(fields.get(4)), priority);
     }
 
     /**
      * Parses a saved event item from a line in the save file.
      *
-     * @param line the line representing the saved event item
+     * @param fields parsed CSV fields
+     * @param description task description
+     * @param priority task priority
      * @return the parsed {@code EventItem}
      */
-    private static ListItem parseEventItem(String line, Priority priority) {
-        String[] fields = extractQuotedFields(line, 3);
-        String task = fields[0];
-        LocalDateTime startDateTime = LocalDateTime.parse(fields[1]);
-        LocalDateTime endDateTime = LocalDateTime.parse(fields[2]);
-        return new EventItem(task, startDateTime, endDateTime, priority);
+    private static ListItem parseEventItem(List<String> fields, String description, Priority priority) {
+        if (fields.size() != 6) {
+            throw new RecordException("Event must contain six fields.");
+        }
+        LocalDateTime startDateTime = LocalDateTime.parse(fields.get(4));
+        LocalDateTime endDateTime = LocalDateTime.parse(fields.get(5));
+        if (endDateTime.isBefore(startDateTime)) {
+            throw new RecordException("Event end must not be before its start.");
+        }
+        return new EventItem(description, startDateTime, endDateTime, priority);
     }
 
     /**
-     * Extracts the quoted fields from a saved item in their stored order.
+     * Parses one CSV record, including commas and doubled quotes inside quoted fields.
      *
-     * @param line the saved item line
-     * @param fieldCount the number of quoted fields expected in the line
-     * @return the extracted field values
+     * @param line CSV record
+     * @return parsed field values
+     * @throws RecordException if the CSV quoting is malformed
      */
-    private static String[] extractQuotedFields(String line, int fieldCount) {
-        String[] fields = new String[fieldCount];
-        int searchStart = 0;
+    private static List<String> parseCsvLine(String line) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder currentField = new StringBuilder();
+        boolean insideQuotes = false;
+        boolean quotedFieldClosed = false;
 
-        for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++) {
-            int fieldStart = line.indexOf(QUOTED_FIELD_PREFIX, searchStart)
-                    + QUOTED_FIELD_PREFIX.length();
-            boolean isLastField = fieldIndex == fieldCount - 1;
-            int fieldEnd = isLastField
-                    ? line.lastIndexOf(CLOSING_QUOTE)
-                    : line.indexOf(QUOTED_FIELD_SEPARATOR, fieldStart);
-
-            if (fieldStart < QUOTED_FIELD_PREFIX.length() || fieldEnd < fieldStart) {
-                throw new RecordException("Saved item has missing or malformed fields.");
+        for (int index = 0; index < line.length(); index++) {
+            char current = line.charAt(index);
+            if (insideQuotes) {
+                if (current != '"') {
+                    currentField.append(current);
+                } else if (index + 1 < line.length() && line.charAt(index + 1) == '"') {
+                    currentField.append('"');
+                    index++;
+                } else {
+                    insideQuotes = false;
+                    quotedFieldClosed = true;
+                }
+            } else if (current == ',') {
+                fields.add(currentField.toString());
+                currentField.setLength(0);
+                quotedFieldClosed = false;
+            } else if (current == '"') {
+                if (!currentField.isEmpty() || quotedFieldClosed) {
+                    throw new RecordException("Quote found in an invalid position.");
+                }
+                insideQuotes = true;
+            } else {
+                if (quotedFieldClosed) {
+                    throw new RecordException("Closing quote must be followed by a comma or line end.");
+                }
+                currentField.append(current);
             }
-
-            fields[fieldIndex] = line.substring(fieldStart, fieldEnd);
-            searchStart = fieldEnd;
         }
-
+        if (insideQuotes) {
+            throw new RecordException("CSV field has no closing quote.");
+        }
+        fields.add(currentField.toString());
         return fields;
     }
 

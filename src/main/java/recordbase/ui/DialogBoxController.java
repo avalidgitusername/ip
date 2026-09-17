@@ -16,6 +16,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 /**
  * Creates a dialog box consisting of an ImageView to represent the speaker's face
@@ -95,6 +98,68 @@ public class DialogBoxController extends HBox {
         dialogBox.getStyleClass().add("record-dialog");
         dialogBox.flip();
         return dialogBox;
+    }
+
+    /**
+     * Creates a compact, visually grouped command reference.
+     *
+     * @param img Record's profile image
+     * @return a left-aligned help dialog with styled command names
+     */
+    public static DialogBoxController getHelpDialog(Image img) {
+        assert img != null : "Record profile image must not be null";
+
+        var dialogBox = getRecordDialog("", img);
+        VBox helpContent = new VBox(4);
+        helpContent.getStyleClass().add("help-content");
+        helpContent.getChildren().addAll(
+                styledLabel("Record commands", "help-title"),
+                styledLabel("ADD TASKS", "help-section"),
+                helpRow("todo", "DESCRIPTION [DATE] [TIME]"),
+                helpRow("deadline", "DESCRIPTION /by DATE [TIME]"),
+                helpRow("event", "DESCRIPTION /from DATE [TIME] /to DATE [TIME]"),
+                styledLabel("MANAGE TASKS", "help-section"),
+                helpRow("list", "show every task"),
+                helpRow("mark / unmark", "NUMBER"),
+                helpRow("delete", "NUMBER"),
+                styledLabel("APP", "help-section"),
+                helpRow("clear", "clear the conversation"),
+                helpRow("help", "show this reference"),
+                helpRow("bye", "save and exit"),
+                styledLabel("Dates: yyyymmdd  •  Times: hh:mm", "help-hint"));
+        dialogBox.dialog.setText(null);
+        dialogBox.dialog.setGraphic(helpContent);
+        return dialogBox;
+    }
+
+    /**
+     * Creates a label with the supplied help style.
+     *
+     * @param text label contents
+     * @param styleClass CSS class to apply
+     * @return configured label
+     */
+    private static Label styledLabel(String text, String styleClass) {
+        Label label = new Label(text);
+        label.getStyleClass().add(styleClass);
+        return label;
+    }
+
+    /**
+     * Creates one help row with a bold command followed by its concise description.
+     *
+     * @param command command name
+     * @param description syntax or behavior summary
+     * @return styled help row
+     */
+    private static TextFlow helpRow(String command, String description) {
+        Text commandText = new Text(command + "  ");
+        commandText.getStyleClass().add("help-command");
+        Text descriptionText = new Text(description);
+        descriptionText.getStyleClass().add("help-description");
+        TextFlow row = new TextFlow(commandText, descriptionText);
+        row.getStyleClass().add("help-row");
+        return row;
     }
 
     /**

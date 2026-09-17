@@ -83,6 +83,18 @@ public abstract class ListItem {
      */
     public abstract String saveString();
 
+    /**
+     * Converts text into a quoted CSV field for persistent storage.
+     *
+     * <p>CSV represents a literal double quote as two consecutive double quotes.</p>
+     *
+     * @param value text to encode
+     * @return safely quoted CSV field
+     */
+    protected static String toCsvField(String value) {
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
