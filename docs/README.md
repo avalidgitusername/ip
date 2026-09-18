@@ -7,11 +7,34 @@ Record is a desktop task manager that keeps to-dos, deadlines, and events togeth
 
 ## Quick start
 
-1. Launch Record. Your previously saved tasks load automatically.
-    > java -jar Record.jar
-2. Type a command in the box at the bottom.
-3. Press **Enter** or select **Send**.
-4. Select **List** at any time to see all tasks and their completion checkboxes.
+1. Install Java 25.
+2. Download the appropriate Record JAR using the guide below.
+3. Open a terminal in the folder containing the downloaded JAR and launch Record:
+
+   ```text
+   java --enable-native-access=javafx.graphics -jar record-VERSION-common.jar
+   ```
+
+   Replace `VERSION` and the JAR name with the filename you downloaded. Your previously saved tasks load automatically.
+4. Type a command in the box at the bottom.
+5. Press **Enter** or select **Send**.
+6. Select **List** at any time to see all tasks and their completion checkboxes.
+
+### Choosing a download
+
+Use `record-VERSION-common.jar` by default. It supports x64 Windows, macOS, and Linux in one file. The platform-specific downloads are smaller, while the ARM64 downloads are required for native ARM64 support.
+
+| Your computer | Recommended download | Reason |
+| --- | --- | --- |
+| Windows with an Intel or AMD 64-bit processor | `record-VERSION-common.jar` or `record-VERSION-windows-x64.jar` | Both contain the required Windows x64 JavaFX libraries. |
+| Intel Mac | `record-VERSION-common.jar` or `record-VERSION-mac-x64.jar` | Both contain the required macOS x64 JavaFX libraries. |
+| Apple-silicon Mac, such as M1, M2, or M3 | `record-VERSION-mac-arm64.jar` | It contains JavaFX libraries compiled for Apple silicon. |
+| Linux reporting `x86_64` or `amd64` | `record-VERSION-common.jar` or `record-VERSION-linux-x64.jar` | Both contain the required Linux x64 JavaFX libraries. |
+| Linux reporting `aarch64` or `arm64` | `record-VERSION-linux-arm64.jar` | It contains JavaFX libraries compiled for ARM64 Linux. |
+
+Do not download `ip-VERSION-without-dependencies.jar` for normal use. It does not include JavaFX and is intended for development rather than direct launching.
+
+On macOS, open **Apple menu > About This Mac** to check whether the processor is Intel or Apple silicon. On Linux, run `uname -m` to see the architecture. Linux also requires a desktop graphical environment and the system GTK libraries used by JavaFX.
 
 Commands are not case-sensitive, but task descriptions keep their capitalization. Dates use `yyyymmdd`; times use 24-hour `hh:mm`. An omitted time means `00:00` (midnight).
 
@@ -27,6 +50,7 @@ Commands are not case-sensitive, but task descriptions keep their capitalization
 | Reopen a task | `unmark NUMBER` or clear its checkbox | `unmark 2` |
 | Delete a task | `delete NUMBER` | `delete 2` |
 | Clear the conversation | `clear` | `clear` |
+| Show command help | `help` | `help` |
 | Exit and save | `bye` | `bye` |
 
 Capitalized words are placeholders; do not type the labels themselves. Items in square brackets are optional.
@@ -111,13 +135,37 @@ After deletion, later numbers shift up. Open the list again if you are unsure of
 
 - Press **Up** and **Down** in the command box to revisit recent commands. Record retains the latest 100 commands for the session.
 - Enter `clear` to remove visible conversation messages. This does **not** delete tasks.
+- Enter `help` to display a concise summary of every supported command.
 - Use the avatar selector to change the avatar beside new messages.
 
 ## Saving and recovery
 
 Record loads `data/listdata.txt` at startup and saves there when you enter `bye`. Missing folders are created automatically. The storage component also supports current-folder, parent-folder, and nested relative paths.
 
-Record rejects unreadable, oversized, corrupted, and unsupported save files instead of partially importing them. If loading fails, check file permissions or restore a valid backup; avoid manually editing the save file.
+Save files use a human-readable CSV format. The first line must be exactly:
+
+```text
+# Record save format v2
+```
+
+The supported records are:
+
+```text
+T,DONE,PRIORITY,"DESCRIPTION"
+T,DONE,PRIORITY,"DESCRIPTION",SCHEDULED_DATE_TIME
+D,DONE,PRIORITY,"DESCRIPTION",DEADLINE
+E,DONE,PRIORITY,"DESCRIPTION",START_DATE_TIME,END_DATE_TIME
+```
+
+`DONE` is `0` or `1`, priority is `1` to `5`, and date-time fields use ISO format such as `2026-09-20T18:30`. Descriptions are quoted CSV fields. To include a double quote, type it twice; commas and apostrophes need no special treatment. For example:
+
+```text
+T,0,3,"Buy milk, bread, and \"\"special\"\" cheese"
+```
+
+You may add correctly formatted records in a plain-text editor. Blank lines and lines beginning with `#` after the format header are ignored. Older storage formats are not supported.
+
+Record rejects unreadable, oversized, corrupted, and unsupported save files instead of partially importing them. If loading fails, check file permissions and confirm that every record follows the format above.
 
 Use `bye` before closing whenever possible so the latest changes are saved.
 
@@ -135,7 +183,7 @@ These limits are designed to keep retained data below 1 GB and should not affect
 
 | Problem | What to do |
 | --- | --- |
-| Empty or unknown command | Type a command from the summary. |
+| Empty or unknown command | Enter `help` or type a command from the summary. |
 | Missing description | Add text describing the task. |
 | Missing `/by`, `/from`, or `/to` | Add the required option and date. |
 | Invalid date or time | Use a real `yyyymmdd` date and optional 24-hour `hh:mm` time. |

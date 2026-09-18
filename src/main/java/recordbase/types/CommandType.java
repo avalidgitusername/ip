@@ -23,6 +23,8 @@ public enum CommandType {
     DEADLINE("deadline"),
     /** Creates an event with a start and end. */
     EVENT("event"),
+    /** Displays guidance for all supported commands. */
+    HELP("help"),
     /** Represents an unrecognised command word. */
     UNKNOWN("");
 

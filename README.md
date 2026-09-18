@@ -18,6 +18,32 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
 
 
+## Building distribution JARs
+
+Use JDK 25 to create all distributable JARs:
+
+```text
+.\gradlew.bat clean build     # Windows
+./gradlew clean build         # macOS or Linux
+```
+
+Gradle writes the JARs to `build/libs`. The version in each filename comes from the `version` field in `build.gradle`.
+
+| Filename | Included JavaFX native libraries | Intended users |
+| --- | --- | --- |
+| `record-VERSION-common.jar` | Windows x64, macOS x64, and Linux x64 | Default download for most users; it is larger because it supports three operating systems. |
+| `record-VERSION-windows-x64.jar` | Windows x64 only | Windows users who want a smaller download. |
+| `record-VERSION-mac-x64.jar` | macOS x64 only | Macs with an Intel processor. |
+| `record-VERSION-mac-arm64.jar` | macOS ARM64 only | Macs with Apple silicon, such as M1, M2, M3, and later M-series processors. |
+| `record-VERSION-linux-x64.jar` | Linux x64 only | Linux computers whose architecture is `x86_64` or `amd64`. |
+| `record-VERSION-linux-arm64.jar` | Linux ARM64 only | Linux computers whose architecture is `aarch64` or `arm64`. |
+
+The platform-specific JARs keep x64 and ARM64 native libraries separate. JavaFX uses some identical native-library filenames for both architectures, so combining both architectures in one fat JAR could cause the wrong library to be loaded.
+
+The build also creates `ip-VERSION-without-dependencies.jar`. This is a thin project JAR and is **not** intended for end users because it does not bundle JavaFX.
+
+When creating a release, upload the common JAR and each platform-specific JAR that the release supports. Users should normally choose the common JAR unless they have an ARM64 computer or prefer the smaller platform-specific download.
+
 ## Code Reuse and Attributions
 
 Code from Week 1 to Week 4 were generally handwritten with some assistance from AI tools (ChatGPT). The basic UI had minor assistance from AI to solve logic errors.

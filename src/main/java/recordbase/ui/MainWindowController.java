@@ -120,6 +120,9 @@ public class MainWindowController extends AnchorPane {
         addTranscriptNodes(false, DialogBoxController.getUserDialog(input, userImage));
         if (!isError && input.trim().equalsIgnoreCase("list")) {
             showTaskList(true);
+        } else if (!isError && input.trim().equalsIgnoreCase("help")) {
+            addTranscriptNodes(shouldFollowOutput,
+                    DialogBoxController.getHelpDialog(recordProfileImage));
         } else {
             addTranscriptNodes(shouldFollowOutput, isError
                     ? DialogBoxController.getErrorDialog(response, recordProfileImage)

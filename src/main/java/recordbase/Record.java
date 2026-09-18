@@ -22,6 +22,13 @@ public class Record {
      * Product name displayed by the command-line and graphical interfaces.
      */
     public static final String APP_NAME = "Record";
+    private static final String HELP_TEXT = """
+            RECORD COMMANDS
+            Add: todo, deadline, event
+            Manage: list, mark NUMBER, unmark NUMBER, delete NUMBER
+            App: clear, help, bye
+
+            See the User Guide for full syntax and examples.""";
 
     private static RecordList list;
 
@@ -114,10 +121,24 @@ public class Record {
             case TODO -> createToDo(command.arguments());
             case DEADLINE -> createDeadline(command.arguments());
             case EVENT -> createEvent(command.arguments());
+            case HELP -> parseHelpCommand(command);
             case UNKNOWN -> throw new RecordException(
-                    "That command skipped a groove. Try todo, deadline, event, list, mark, unmark, delete, or bye.");
+                    "That command skipped a groove. Try todo, deadline, event, list, mark, unmark, delete, clear,"
+                            + " help, or bye.");
         };
 
+    }
+
+    /**
+     * Processes a help command.
+     *
+     * @param command the parsed help command
+     * @return summary of supported commands
+     * @throws RecordException if arguments were supplied
+     */
+    private static String parseHelpCommand(ParsedCommand command) {
+        requireNoArguments(command);
+        return HELP_TEXT;
     }
 
     /**

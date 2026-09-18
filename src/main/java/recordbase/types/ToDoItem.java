@@ -56,8 +56,8 @@ public class ToDoItem extends ListItem {
 
     @Override
     public String saveString() {
-        String basicFields = String.format("T, %s, %d, '%s'", this.isDone ? "1" : "0",
-                priority.getLevel(), this.taskDesc);
-        return scheduledDate == null ? basicFields : basicFields + String.format(", '%s'", scheduledDate);
+        String basicFields = String.format("T,%s,%d,%s", this.isDone ? "1" : "0",
+                priority.getLevel(), toCsvField(this.taskDesc));
+        return scheduledDate == null ? basicFields : basicFields + "," + scheduledDate;
     }
 }

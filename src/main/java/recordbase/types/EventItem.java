@@ -58,7 +58,7 @@ public class EventItem extends ListItem {
 
     @Override
     public String saveString() {
-        return String.format("E, %s, %d, '%s', '%s', '%s'", this.isDone ? "1" : "0",
-                priority.getLevel(), this.taskDesc, this.fromDate, this.toDate);
+        return String.format("E,%s,%d,%s,%s,%s", this.isDone ? "1" : "0",
+                priority.getLevel(), toCsvField(this.taskDesc), this.fromDate, this.toDate);
     }
 }

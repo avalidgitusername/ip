@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'recordbase'
-version = '0.0.1'
+version = '0.0.3'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_25
@@ -20,6 +20,14 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    javaFxWindows
+    javaFxMac
+    javaFxMacArm64
+    javaFxLinux
+    javaFxLinuxArm64
+}
+
 dependencies {
     String jUnitVersion = '5.14.4'
 
@@ -30,16 +38,46 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
 
     String javaFxVersion = '25.0.2'
-    String osName = System.getProperty('os.name').toLowerCase()
-    String architecture = System.getProperty('os.arch').toLowerCase()
-    String javaFxPlatform = osName.contains('win') ? 'win' : osName.contains('mac') ? 'mac' : 'linux'
-    if (architecture.contains('aarch64') || architecture.contains('arm64')) {
-        javaFxPlatform += '-aarch64'
-    }
-    implementation("org.openjfx:javafx-base:${javaFxVersion}:${javaFxPlatform}")
-    implementation("org.openjfx:javafx-controls:${javaFxVersion}:${javaFxPlatform}")
-    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:${javaFxPlatform}")
-    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:${javaFxPlatform}")
+
+    // The common fat JAR supports the three main x64 desktop platforms.
+    implementation("org.openjfx:javafx-base:${javaFxVersion}:win")
+    implementation("org.openjfx:javafx-base:${javaFxVersion}:mac")
+    implementation("org.openjfx:javafx-base:${javaFxVersion}:linux")
+    implementation("org.openjfx:javafx-controls:${javaFxVersion}:win")
+    implementation("org.openjfx:javafx-controls:${javaFxVersion}:mac")
+    implementation("org.openjfx:javafx-controls:${javaFxVersion}:linux")
+    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:win")
+    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:mac")
+    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:linux")
+    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:win")
+    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:mac")
+    implementation("org.openjfx:javafx-graphics:${javaFxVersion}:linux")
+
+    // Dedicated configurations avoid mixing native libraries from different CPU architectures.
+    javaFxWindows("org.openjfx:javafx-base:${javaFxVersion}:win") { transitive = false }
+    javaFxWindows("org.openjfx:javafx-controls:${javaFxVersion}:win") { transitive = false }
+    javaFxWindows("org.openjfx:javafx-fxml:${javaFxVersion}:win") { transitive = false }
+    javaFxWindows("org.openjfx:javafx-graphics:${javaFxVersion}:win") { transitive = false }
+
+    javaFxMac("org.openjfx:javafx-base:${javaFxVersion}:mac") { transitive = false }
+    javaFxMac("org.openjfx:javafx-controls:${javaFxVersion}:mac") { transitive = false }
+    javaFxMac("org.openjfx:javafx-fxml:${javaFxVersion}:mac") { transitive = false }
+    javaFxMac("org.openjfx:javafx-graphics:${javaFxVersion}:mac") { transitive = false }
+
+    javaFxMacArm64("org.openjfx:javafx-base:${javaFxVersion}:mac-aarch64") { transitive = false }
+    javaFxMacArm64("org.openjfx:javafx-controls:${javaFxVersion}:mac-aarch64") { transitive = false }
+    javaFxMacArm64("org.openjfx:javafx-fxml:${javaFxVersion}:mac-aarch64") { transitive = false }
+    javaFxMacArm64("org.openjfx:javafx-graphics:${javaFxVersion}:mac-aarch64") { transitive = false }
+
+    javaFxLinux("org.openjfx:javafx-base:${javaFxVersion}:linux") { transitive = false }
+    javaFxLinux("org.openjfx:javafx-controls:${javaFxVersion}:linux") { transitive = false }
+    javaFxLinux("org.openjfx:javafx-fxml:${javaFxVersion}:linux") { transitive = false }
+    javaFxLinux("org.openjfx:javafx-graphics:${javaFxVersion}:linux") { transitive = false }
+
+    javaFxLinuxArm64("org.openjfx:javafx-base:${javaFxVersion}:linux-aarch64") { transitive = false }
+    javaFxLinuxArm64("org.openjfx:javafx-controls:${javaFxVersion}:linux-aarch64") { transitive = false }
+    javaFxLinuxArm64("org.openjfx:javafx-fxml:${javaFxVersion}:linux-aarch64") { transitive = false }
+    javaFxLinuxArm64("org.openjfx:javafx-graphics:${javaFxVersion}:linux-aarch64") { transitive = false }
 }
 
 test {
@@ -76,13 +114,47 @@ jar {
 tasks.named('shadowJar') {
     archiveBaseName = 'record'
     archiveVersion = project.version.toString()
-    archiveClassifier = 'all'
+    archiveClassifier = 'common'
 
     mergeServiceFiles()
 }
 
+// All distribution tasks use the Shadow plugin already applied above; no extra plugin is needed.
+def shadowJarType = tasks.named('shadowJar').get().class
+
+def registerPlatformJar = { String taskName, String classifier, Configuration javaFxConfiguration ->
+    tasks.register(taskName, shadowJarType) {
+        group = 'distribution'
+        description = "Creates the ${classifier} JavaFX fat JAR."
+
+        archiveBaseName = 'record'
+        archiveVersion = project.version.toString()
+        archiveClassifier = classifier
+
+        from sourceSets.main.output
+        configurations = [javaFxConfiguration]
+
+        manifest {
+            attributes 'Main-Class': application.mainClass.get()
+        }
+
+        mergeServiceFiles()
+    }
+}
+
+registerPlatformJar('windowsJar', 'windows-x64', configurations.javaFxWindows)
+registerPlatformJar('macJar', 'mac-x64', configurations.javaFxMac)
+registerPlatformJar('macArm64Jar', 'mac-arm64', configurations.javaFxMacArm64)
+registerPlatformJar('linuxJar', 'linux-x64', configurations.javaFxLinux)
+registerPlatformJar('linuxArm64Jar', 'linux-arm64', configurations.javaFxLinuxArm64)
+
 tasks.named('build') {
     dependsOn tasks.named('shadowJar')
+    dependsOn tasks.named('windowsJar')
+    dependsOn tasks.named('macJar')
+    dependsOn tasks.named('macArm64Jar')
+    dependsOn tasks.named('linuxJar')
+    dependsOn tasks.named('linuxArm64Jar')
 }
 
 checkstyle {
